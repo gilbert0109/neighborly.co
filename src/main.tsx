@@ -14,6 +14,14 @@ import "./types/global.d.ts";
 const Landing = lazy(() => import("./pages/Landing.tsx"));
 const AuthPage = lazy(() => import("./pages/Auth.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
+const Dashboard = lazy(() => import("./pages/Dashboard.tsx"));
+const Jobs = lazy(() => import("./pages/Jobs.tsx"));
+const JobDetail = lazy(() => import("./pages/JobDetail.tsx"));
+const PostJob = lazy(() => import("./pages/PostJob.tsx"));
+const Bookings = lazy(() => import("./pages/Bookings.tsx"));
+const BookingDetail = lazy(() => import("./pages/BookingDetail.tsx"));
+const Profile = lazy(() => import("./pages/Profile.tsx"));
+const ProtectedRoute = lazy(() => import("./components/ProtectedRoute.tsx").then(m => ({ default: m.ProtectedRoute })));
 
 // Simple loading fallback for route transitions
 function RouteLoading() {
@@ -62,7 +70,14 @@ createRoot(document.getElementById("root")!).render(
           <Suspense fallback={<RouteLoading />}>
             <Routes>
               <Route path="/" element={<Landing />} />
-              <Route path="/auth" element={<AuthPage redirectAfterAuth="/" />} /> {/* TODO: change redirect after auth to correct page */}
+              <Route path="/auth" element={<AuthPage redirectAfterAuth="/dashboard" />} />
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/jobs" element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
+              <Route path="/jobs/new" element={<ProtectedRoute><PostJob /></ProtectedRoute>} />
+              <Route path="/jobs/:jobId" element={<ProtectedRoute><JobDetail /></ProtectedRoute>} />
+              <Route path="/bookings" element={<ProtectedRoute><Bookings /></ProtectedRoute>} />
+              <Route path="/bookings/:bookingId" element={<ProtectedRoute><BookingDetail /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
