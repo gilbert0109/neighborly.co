@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { api, type Id } from "@/convex/_generated/api";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import {
@@ -32,20 +32,20 @@ export default function BookingDetail() {
   const { user } = useAuth();
   const bookingData = useQuery(
     api.bookings.getBooking,
-    bookingId ? { bookingId: bookingId as any } : "skip"
+    bookingId ? { bookingId: bookingId as Id<"bookings"> } : "skip"
   );
-  const messages =
-    useQuery(
-      api.messages.getMessages,
-      bookingId ? { bookingId: bookingId as any } : "skip"
-    ) || [];
+  const rawMessages = useQuery(
+    api.messages.getMessages,
+    bookingId ? { bookingId: bookingId as Id<"bookings"> } : "skip"
+  );
+  const messages = rawMessages || [];
 
   const updateStatus = useMutation(api.bookings.updateBookingStatus);
   const sendMessage = useMutation(api.messages.sendMessage);
   const createReview = useMutation(api.reviews.createReview);
   const bookingReview = useQuery(
     api.reviews.getBookingReview,
-    bookingId ? { bookingId: bookingId as any } : "skip"
+    bookingId ? { bookingId: bookingId as Id<"bookings"> } : "skip"
   );
 
   const [chatInput, setChatInput] = useState("");
@@ -99,7 +99,7 @@ export default function BookingDetail() {
     status: "accepted" | "in_progress" | "completed" | "cancelled"
   ) => {
     try {
-      await updateStatus({ bookingId: bookingId as any, status });
+      await updateStatus({ bookingId: bookingId as Id<"bookings">, status });
       toast.success(`Booking ${status.replace("_", " ")}`);
     } catch (e: any) {
       toast.error(e.message || "Failed to update status");
@@ -111,7 +111,7 @@ export default function BookingDetail() {
     setIsSending(true);
     try {
       await sendMessage({
-        bookingId: bookingId as any,
+        bookingId: bookingId as Id<"bookings">,
         content: chatInput.trim(),
       });
       setChatInput("");
@@ -130,7 +130,7 @@ export default function BookingDetail() {
     setIsReviewing(true);
     try {
       await createReview({
-        bookingId: bookingId as any,
+        bookingId: bookingId as Id<"bookings">,
         rating,
         comment: reviewComment,
       });

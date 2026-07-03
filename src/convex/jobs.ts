@@ -14,32 +14,28 @@ export const listJobs = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    let q = ctx.db.query("jobs");
+    // Use a single full table scan with order, then filter in memory.
+    // This avoids the type-incompatible chaining of withIndex on different indexes.
+    let jobs = await ctx.db.query("jobs").order("desc").collect();
 
+    // Filter by status (default: open only)
     if (args.status) {
-      q = q.withIndex("by_status", (q) => q.eq("status", args.status));
-    } else if (args.category) {
-      q = q.withIndex("by_category", (q) => q.eq("category", args.category));
-    } else if (args.city) {
-      q = q.withIndex("by_city", (q) => q.eq("city", args.city));
-    }
-
-    let jobs = await q.order("desc").collect();
-
-    // Filter only open jobs by default
-    if (!args.status) {
+      jobs = jobs.filter((j) => j.status === args.status);
+    } else {
       jobs = jobs.filter((j) => j.status === "open");
     }
 
+    // Filter by category
     if (args.category) {
       jobs = jobs.filter((j) => j.category === args.category);
     }
 
+    // Filter by city
     if (args.city) {
       jobs = jobs.filter((j) => j.city === args.city);
     }
 
-    // Distance filter
+    // Distance filter and sort
     if (args.lat !== undefined && args.lng !== undefined) {
       jobs = jobs.filter((j) => {
         const d = distance(args.lat!, args.lng!, j.location.lat, j.location.lng);

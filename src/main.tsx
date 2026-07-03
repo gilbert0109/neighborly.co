@@ -2,6 +2,7 @@ import '@vly-ai/integrations';
 import { Toaster } from "@/components/ui/sonner";
 import { VlyToolbar } from "../vly-toolbar-readonly.tsx";
 import { InstrumentationProvider } from "@/instrumentation.tsx";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { ConvexReactClient } from "convex/react";
 import { StrictMode, useEffect, lazy, Suspense } from "react";
@@ -21,7 +22,6 @@ const PostJob = lazy(() => import("./pages/PostJob.tsx"));
 const Bookings = lazy(() => import("./pages/Bookings.tsx"));
 const BookingDetail = lazy(() => import("./pages/BookingDetail.tsx"));
 const Profile = lazy(() => import("./pages/Profile.tsx"));
-const ProtectedRoute = lazy(() => import("./components/ProtectedRoute.tsx").then(m => ({ default: m.ProtectedRoute })));
 
 // Simple loading fallback for route transitions
 function RouteLoading() {

@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { api, type Id } from "@/convex/_generated/api";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import {
@@ -27,7 +27,7 @@ export default function JobDetail() {
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const jobData = useQuery(api.jobs.getJob, jobId ? { jobId: jobId as any } : "skip");
+  const jobData = useQuery(api.jobs.getJob, jobId ? { jobId: jobId as Id<"jobs"> } : "skip");
   const createBooking = useMutation(api.bookings.createBooking);
   const [scheduledDate, setScheduledDate] = useState("");
   const [notes, setNotes] = useState("");
@@ -77,7 +77,7 @@ export default function JobDetail() {
     setIsBooking(true);
     try {
       await createBooking({
-        jobId: jobId as any,
+        jobId: jobId as Id<"jobs">,
         scheduledDate: new Date(scheduledDate).getTime(),
         customerNotes: notes || undefined,
       });

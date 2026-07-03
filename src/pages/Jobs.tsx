@@ -9,7 +9,6 @@ import { api } from "@/convex/_generated/api";
 import { useNavigate } from "react-router";
 import {
   Search,
-  Filter,
   MapPin,
   Clock,
   Briefcase,

@@ -8,7 +8,6 @@ import {
   Briefcase,
   PlusCircle,
   CalendarCheck,
-  MessageSquare,
   User,
   LogOut,
   Wrench,
@@ -23,8 +22,15 @@ const navItems = [
   { path: "/profile", label: "Profile", icon: User },
 ];
 
-// Sort by path length descending so longer paths match first
-const sortedNavItems = [...navItems].sort((a, b) => b.path.length - a.path.length);
+function matchCurrentPath(pathname: string): string | undefined {
+  for (const item of navItems) {
+    if (pathname === item.path) return item.label;
+  }
+  for (const item of navItems) {
+    if (pathname.startsWith(item.path + "/")) return item.label;
+  }
+  return undefined;
+}
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, signOut } = useAuth();
@@ -71,7 +77,13 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 const isActive =
                   location.pathname === item.path ||
                   (item.path !== "/dashboard" &&
-                    location.pathname.startsWith(item.path + "/"));
+                    location.pathname.startsWith(item.path + "/") &&
+                    !navItems.some(
+                      (other) =>
+                        other.path !== item.path &&
+                        other.path.length > item.path.length &&
+                        location.pathname.startsWith(other.path)
+                    ));
                 return (
                   <SidebarMenuItem key={item.path}>
                     <SidebarMenuButton
@@ -123,9 +135,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <header className="h-14 border-b-2 border-foreground flex items-center px-4 gap-3 shrink-0">
             <SidebarTrigger className="rounded-none border-2 border-foreground" />
             <h1 className="font-bold text-lg truncate">
-              {sortedNavItems.find((i) =>
-                location.pathname === i.path || location.pathname.startsWith(i.path + "/")
-              )?.label || "Neighborly"}
+              {matchCurrentPath(location.pathname) || "Neighborly"}
             </h1>
           </header>
           <main className="flex-1 overflow-auto p-4 md:p-6">{children}</main>

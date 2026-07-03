@@ -14,7 +14,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/use-auth";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 import {
@@ -25,15 +25,18 @@ import {
   Clock,
   CheckCircle,
   MapPin,
+  Calendar,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Profile() {
   const { user, signOut } = useAuth();
   const updateProfile = useMutation(api.users.updateProfile);
   const setRole = useMutation(api.users.setRole);
   const requestVerification = useMutation(api.users.requestVerification);
+  const setAvailability = useMutation(api.availability.setAvailability);
+  const availability = useQuery(api.availability.getMyAvailability);
 
   const [name, setName] = useState(user?.name || "");
   const [age, setAge] = useState(user?.age?.toString() || "");
@@ -44,6 +47,20 @@ export default function Profile() {
   const [role, setRoleState] = useState(user?.role || "");
   const [isSaving, setIsSaving] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+
+  // Availability state for helpers
+  const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const [availEntries, setAvailEntries] = useState<{ dayOfWeek: number; startTime: string; endTime: string }[]>([]);
+  const [availInitialized, setAvailInitialized] = useState(false);
+  const [isSavingAvail, setIsSavingAvail] = useState(false);
+
+  // Sync availability from DB on first load
+  useEffect(() => {
+    if (availability && !availInitialized) {
+      setAvailEntries(availability.map((a) => ({ dayOfWeek: a.dayOfWeek, startTime: a.startTime, endTime: a.endTime })));
+      setAvailInitialized(true);
+    }
+  }, [availability, availInitialized]);
 
   const initials = user?.name
     ? user.name
@@ -88,6 +105,32 @@ export default function Profile() {
     } finally {
       setIsVerifying(false);
     }
+  };
+
+  const handleSaveAvailability = async () => {
+    setIsSavingAvail(true);
+    try {
+      await setAvailability({ entries: availEntries });
+      toast.success("Availability saved!");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to save availability");
+    } finally {
+      setIsSavingAvail(false);
+    }
+  };
+
+  const toggleDay = (day: number) => {
+    setAvailEntries((prev) => {
+      const exists = prev.find((e) => e.dayOfWeek === day);
+      if (exists) return prev.filter((e) => e.dayOfWeek !== day);
+      return [...prev, { dayOfWeek: day, startTime: "08:00", endTime: "17:00" }];
+    });
+  };
+
+  const updateTime = (day: number, field: "startTime" | "endTime", value: string) => {
+    setAvailEntries((prev) =>
+      prev.map((e) => (e.dayOfWeek === day ? { ...e, [field]: value } : e))
+    );
   };
 
   if (user === undefined) {
@@ -327,6 +370,71 @@ export default function Profile() {
                     </p>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Helper Availability */}
+          {role === "helper" && (
+            <Card className="rounded-none border-2 border-foreground">
+              <CardHeader>
+                <CardTitle className="text-lg font-black flex items-center gap-2">
+                  <Calendar className="size-5" />
+                  Weekly Availability
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Select the days and times you're available to help neighbors.
+                </p>
+                {daysOfWeek.map((day, i) => {
+                  const entry = availEntries.find((e) => e.dayOfWeek === i);
+                  const isActive = !!entry;
+                  return (
+                    <div key={day} className="flex items-center gap-3">
+                      <button
+                        onClick={() => toggleDay(i)}
+                        className={`w-12 h-10 text-xs font-bold border-2 border-foreground transition-colors ${
+                          isActive
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-background hover:bg-accent"
+                        }`}
+                      >
+                        {day}
+                      </button>
+                      {isActive ? (
+                        <div className="flex items-center gap-2 flex-1">
+                          <Input
+                            type="time"
+                            value={entry.startTime}
+                            onChange={(e) => updateTime(i, "startTime", e.target.value)}
+                            className="rounded-none border-2 border-foreground w-32"
+                          />
+                          <span className="text-sm font-bold">–</span>
+                          <Input
+                            type="time"
+                            value={entry.endTime}
+                            onChange={(e) => updateTime(i, "endTime", e.target.value)}
+                            className="rounded-none border-2 border-foreground w-32"
+                          />
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground flex-1">
+                          Not available
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+                <Button
+                  onClick={handleSaveAvailability}
+                  disabled={isSavingAvail}
+                  className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)]"
+                  variant="outline"
+                >
+                  <Save className="size-4" />
+                  {isSavingAvail ? "Saving..." : "Save Availability"}
+                </Button>
               </CardContent>
             </Card>
           )}
