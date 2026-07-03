@@ -14,6 +14,7 @@ import {
   XCircle,
   ArrowRight,
   MapPin,
+  MessageSquare,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useMemo } from "react";
@@ -172,15 +173,23 @@ export default function Bookings() {
                                 <p className="font-black text-lg">
                                   {booking.price} kr
                                 </p>
-                                <p className="text-xs text-muted-foreground">
-                                  {booking.status === "completed" ? (
-                                    <CheckCircle className="size-3 inline mr-1 text-green-600" />
-                                  ) : booking.status === "cancelled" ? (
-                                    <XCircle className="size-3 inline mr-1 text-red-600" />
-                                  ) : (
-                                    <Clock className="size-3 inline mr-1" />
+                                <div className="flex items-center gap-2 justify-end mt-1">
+                                  <span className="text-xs text-muted-foreground">
+                                    {booking.status === "completed" ? (
+                                      <CheckCircle className="size-3 inline mr-1 text-green-600" />
+                                    ) : booking.status === "cancelled" ? (
+                                      <XCircle className="size-3 inline mr-1 text-red-600" />
+                                    ) : (
+                                      <Clock className="size-3 inline mr-1" />
+                                    )}
+                                  </span>
+                                  {booking.status !== "cancelled" && booking.status !== "completed" && (
+                                    <span className="text-xs text-primary font-medium flex items-center gap-1">
+                                      <MessageSquare className="size-3" />
+                                      Chat
+                                    </span>
                                   )}
-                                </p>
+                                </div>
                               </div>
                             </div>
                           </CardContent>

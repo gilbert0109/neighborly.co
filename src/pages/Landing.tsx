@@ -86,24 +86,6 @@ const steps = [
   },
 ];
 
-const testimonials = [
-  {
-    text: "Found a college student two blocks away who mows my lawn every other week. Saved me hours and the kid earns good money.",
-    author: "Sarah K.",
-    role: "Homeowner",
-  },
-  {
-    text: "I make $400/month walking dogs in my neighborhood. It fits perfectly around my classes and I get to hang out with pups.",
-    author: "Marcus T.",
-    role: "Student Helper",
-  },
-  {
-    text: "Posted a snow shoveling job at 7am — someone was at my door by 8. The neighborhood trust factor is everything.",
-    author: "David L.",
-    role: "Parent",
-  },
-];
-
 export default function Landing() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
@@ -289,30 +271,7 @@ export default function Landing() {
           </div>
         </div>
 
-        {/* Stats bar */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-          className="max-w-3xl mx-auto px-4 pb-16"
-        >
-          <div className="border-2 border-foreground bg-card grid grid-cols-3 divide-x-2 divide-foreground">
-            {[
-              { value: "500+", label: "Active Helpers" },
-              { value: "2,000+", label: "Tasks Completed" },
-              { value: "4.9/5", label: "Average Rating" },
-            ].map((stat) => (
-              <div key={stat.label} className="text-center py-6 px-4">
-                <div className="text-2xl sm:text-3xl font-black">
-                  {stat.value}
-                </div>
-                <div className="text-xs sm:text-sm text-muted-foreground font-medium mt-1">
-                  {stat.label}
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
+
       </motion.section>
 
       {/* ─── How It Works ─── */}
@@ -398,22 +357,6 @@ export default function Landing() {
                 <p className="text-sm font-semibold">{cat.label}</p>
               </motion.div>
             ))}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.3, delay: 0.5 }}
-              className="border-2 border-dashed border-foreground/30 bg-card/50 p-5 text-center flex flex-col items-center justify-center hover:border-foreground transition-colors group"
-            >
-              <div className="size-8 mx-auto mb-3 rounded-full border-2 border-dashed border-foreground/30 flex items-center justify-center group-hover:border-foreground transition-colors">
-                <span className="text-xl font-black text-foreground/30 group-hover:text-foreground transition-colors">
-                  +
-                </span>
-              </div>
-              <p className="text-sm font-semibold text-muted-foreground">
-                And more
-              </p>
-            </motion.div>
           </div>
         </div>
       </section>
@@ -460,56 +403,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ─── Testimonials ─── */}
-      <section className="py-20 md:py-28">
-        <div className="max-w-6xl mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight mb-4">
-              Loved by neighbors
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-lg mx-auto">
-              Real stories from people using Neighborly every day.
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {testimonials.map((t, i) => (
-              <motion.div
-                key={t.author}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.4, delay: i * 0.15 }}
-                className="border-2 border-foreground bg-card p-6 flex flex-col"
-              >
-                {/* Stars */}
-                <div className="flex gap-1 mb-4">
-                  {[...Array(5)].map((_, j) => (
-                    <Star
-                      key={j}
-                      className="size-4 fill-accent text-accent"
-                    />
-                  ))}
-                </div>
-                <p className="text-sm leading-relaxed flex-1 mb-4">
-                  "{t.text}"
-                </p>
-                <div>
-                  <p className="font-bold text-sm">{t.author}</p>
-                  <p className="text-xs text-muted-foreground">{t.role}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ─── CTA Section ─── */}
       <section className="py-20 md:py-28 bg-primary border-y-2 border-foreground relative overflow-hidden">
         {/* Decorative pattern */}
@@ -549,7 +442,7 @@ export default function Landing() {
       {/* ─── Footer ─── */}
       <footer className="border-t-2 border-foreground bg-card py-12">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-8 mb-10">
+          <div className="            grid sm:grid-cols-2 md:grid-cols-2 gap-8 mb-10">
             {/* Brand */}
             <div>
               <div className="flex items-center gap-2 font-bold text-lg mb-3">
@@ -575,27 +468,6 @@ export default function Landing() {
               </div>
             </div>
 
-            <div>
-              <h4 className="font-bold text-sm mb-3 uppercase tracking-wider">
-                Company
-              </h4>
-              <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-                <span className="cursor-default">About</span>
-                <span className="cursor-default">Blog</span>
-                <span className="cursor-default">Careers</span>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="font-bold text-sm mb-3 uppercase tracking-wider">
-                Legal
-              </h4>
-              <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-                <span className="cursor-default">Privacy Policy</span>
-                <span className="cursor-default">Terms of Service</span>
-                <span className="cursor-default">Community Guidelines</span>
-              </div>
-            </div>
           </div>
 
           <div className="border-t-2 border-foreground pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">

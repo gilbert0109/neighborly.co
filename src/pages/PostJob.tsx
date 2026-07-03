@@ -52,7 +52,7 @@ export default function PostJob() {
         price: Math.round(priceNum * 100), // Convert to øre (cents)
         address,
         city: city || undefined,
-        location: { lat: 55.6761, lng: 12.5683 }, // Default: Copenhagen
+        location: { lat: 0, lng: 0 }, // Note: real geocoding from address needed in production
         scheduledDate: scheduledDate
           ? new Date(scheduledDate).getTime()
           : undefined,
