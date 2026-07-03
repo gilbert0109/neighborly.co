@@ -2,42 +2,232 @@ import { authTables } from "@convex-dev/auth/server";
 import { defineSchema, defineTable } from "convex/server";
 import { Infer, v } from "convex/values";
 
-// default user roles. can add / remove based on the project as needed
 export const ROLES = {
   ADMIN: "admin",
-  USER: "user",
-  MEMBER: "member",
+  CUSTOMER: "customer",
+  HELPER: "helper",
 } as const;
 
 export const roleValidator = v.union(
   v.literal(ROLES.ADMIN),
-  v.literal(ROLES.USER),
-  v.literal(ROLES.MEMBER),
+  v.literal(ROLES.CUSTOMER),
+  v.literal(ROLES.HELPER),
 );
 export type Role = Infer<typeof roleValidator>;
 
+// Only outdoor job categories allowed
+export const JOB_CATEGORIES = [
+  "lawn-mowing",
+  "gardening",
+  "dog-walking",
+  "snow-shoveling",
+  "car-washing",
+  "leaf-raking",
+  "grocery-delivery",
+  "furniture-moving",
+  "window-cleaning",
+  "bike-repair",
+  "other-outdoor",
+] as const;
+
+export const jobCategoryValidator = v.union(
+  ...JOB_CATEGORIES.map((c) => v.literal(c)),
+);
+export type JobCategory = Infer<typeof jobCategoryValidator>;
+
+export const BOOKING_STATUSES = [
+  "pending",
+  "accepted",
+  "in_progress",
+  "completed",
+  "cancelled",
+  "disputed",
+] as const;
+
+export const bookingStatusValidator = v.union(
+  ...BOOKING_STATUSES.map((s) => v.literal(s)),
+);
+export type BookingStatus = Infer<typeof bookingStatusValidator>;
+
+export const PAYMENT_STATUSES = [
+  "pending",
+  "held",
+  "released",
+  "refunded",
+] as const;
+
+export const paymentStatusValidator = v.union(
+  ...PAYMENT_STATUSES.map((s) => v.literal(s)),
+);
+
 const schema = defineSchema(
   {
-    // default auth tables using convex auth.
-    ...authTables, // do not remove or modify
+    ...authTables,
 
-    // the users table is the default users table that is brought in by the authTables
     users: defineTable({
-      name: v.optional(v.string()), // name of the user. do not remove
-      image: v.optional(v.string()), // image of the user. do not remove
-      email: v.optional(v.string()), // email of the user. do not remove
-      emailVerificationTime: v.optional(v.number()), // email verification time. do not remove
-      isAnonymous: v.optional(v.boolean()), // is the user anonymous. do not remove
+      name: v.optional(v.string()),
+      image: v.optional(v.string()),
+      email: v.optional(v.string()),
+      emailVerificationTime: v.optional(v.number()),
+      isAnonymous: v.optional(v.boolean()),
+      role: v.optional(roleValidator),
 
-      role: v.optional(roleValidator), // role of the user. do not remove
-    }).index("email", ["email"]), // index for the email. do not remove or modify
+      // Neighborly-specific fields
+      age: v.optional(v.number()),
+      phone: v.optional(v.string()),
+      bio: v.optional(v.string()),
+      location: v.optional(v.object({ lat: v.number(), lng: v.number() })),
+      address: v.optional(v.string()),
+      city: v.optional(v.string()),
+      isVerified: v.optional(v.boolean()),
+      verificationStatus: v.optional(
+        v.union(
+          v.literal("unverified"),
+          v.literal("pending"),
+          v.literal("verified"),
+          v.literal("rejected"),
+        ),
+      ),
+      parentApproved: v.optional(v.boolean()),
+      parentEmail: v.optional(v.string()),
+      banned: v.optional(v.boolean()),
+      bannedAt: v.optional(v.number()),
+      bannedReason: v.optional(v.string()),
+      averageRating: v.optional(v.number()),
+      totalReviews: v.optional(v.number()),
+      completedJobs: v.optional(v.number()),
+      stripeCustomerId: v.optional(v.string()),
+    })
+      .index("email", ["email"])
+      .index("by_role", ["role"])
+      .index("by_verification", ["verificationStatus"])
+      .index("by_banned", ["banned"]),
 
-    // add other tables here
+    jobs: defineTable({
+      customerId: v.id("users"),
+      title: v.string(),
+      description: v.string(),
+      category: jobCategoryValidator,
+      price: v.number(), // in cents (DKK øre)
+      location: v.object({ lat: v.number(), lng: v.number() }),
+      address: v.string(),
+      city: v.optional(v.string()),
+      scheduledDate: v.optional(v.number()),
+      status: v.union(
+        v.literal("open"),
+        v.literal("assigned"),
+        v.literal("in_progress"),
+        v.literal("completed"),
+        v.literal("cancelled"),
+      ),
+      imageUrl: v.optional(v.string()),
+      createdAt: v.number(),
+      updatedAt: v.number(),
+    })
+      .index("by_customer", ["customerId"])
+      .index("by_status", ["status"])
+      .index("by_category", ["category"])
+      .index("by_city", ["city"]),
 
-    // tableName: defineTable({
-    //   ...
-    //   // table fields
-    // }).index("by_field", ["field"])
+    bookings: defineTable({
+      jobId: v.id("jobs"),
+      helperId: v.id("users"),
+      customerId: v.id("users"),
+      status: bookingStatusValidator,
+      scheduledDate: v.number(),
+      price: v.number(),
+      stripePaymentIntentId: v.optional(v.string()),
+      paymentStatus: paymentStatusValidator,
+      customerNotes: v.optional(v.string()),
+      helperNotes: v.optional(v.string()),
+      createdAt: v.number(),
+      updatedAt: v.number(),
+    })
+      .index("by_job", ["jobId"])
+      .index("by_helper", ["helperId"])
+      .index("by_customer", ["customerId"])
+      .index("by_status", ["status"])
+      .index("by_payment", ["paymentStatus"]),
+
+    reviews: defineTable({
+      bookingId: v.id("bookings"),
+      reviewerId: v.id("users"),
+      revieweeId: v.id("users"),
+      role: v.union(v.literal("customer"), v.literal("helper")),
+      rating: v.number(), // 1-5
+      comment: v.string(),
+      createdAt: v.number(),
+    })
+      .index("by_reviewee", ["revieweeId"])
+      .index("by_booking", ["bookingId"])
+      .index("by_reviewer", ["reviewerId"]),
+
+    helperAvailability: defineTable({
+      helperId: v.id("users"),
+      dayOfWeek: v.number(), // 0=Sunday, 6=Saturday
+      startTime: v.string(), // "HH:MM" format
+      endTime: v.string(),
+    }).index("by_helper", ["helperId"]),
+
+    messages: defineTable({
+      bookingId: v.id("bookings"),
+      senderId: v.id("users"),
+      receiverId: v.id("users"),
+      content: v.string(),
+      isFiltered: v.optional(v.boolean()),
+      filterReason: v.optional(v.string()),
+      createdAt: v.number(),
+    })
+      .index("by_booking", ["bookingId"])
+      .index("by_sender", ["senderId"]),
+
+    parentApprovals: defineTable({
+      childId: v.id("users"),
+      parentEmail: v.string(),
+      parentName: v.optional(v.string()),
+      approved: v.boolean(),
+      approvedAt: v.optional(v.number()),
+      token: v.string(), // unique token for approval link
+      createdAt: v.number(),
+    })
+      .index("by_child", ["childId"])
+      .index("by_token", ["token"]),
+
+    bannedUsers: defineTable({
+      userId: v.id("users"),
+      bannedBy: v.id("users"),
+      reason: v.string(),
+      bannedAt: v.number(),
+      unbannedAt: v.optional(v.number()),
+      isActive: v.boolean(),
+    })
+      .index("by_user", ["userId"])
+      .index("by_active", ["isActive"]),
+
+    reports: defineTable({
+      reporterId: v.id("users"),
+      reportedUserId: v.id("users"),
+      bookingId: v.optional(v.id("bookings")),
+      reason: v.string(),
+      details: v.optional(v.string()),
+      status: v.union(
+        v.literal("pending"),
+        v.literal("reviewed"),
+        v.literal("resolved"),
+        v.literal("dismissed"),
+      ),
+      reviewedBy: v.optional(v.id("users")),
+      createdAt: v.number(),
+      updatedAt: v.number(),
+    })
+      .index("by_reported", ["reportedUserId"])
+      .index("by_status", ["status"]),
+
+    termsAcceptance: defineTable({
+      userId: v.id("users"),
+      acceptedAt: v.number(),
+      version: v.string(),
+    }).index("by_user", ["userId"]),
   },
   {
     schemaValidation: false,
