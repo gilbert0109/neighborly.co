@@ -34,7 +34,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
 
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
-      const redirect = redirectAfterAuth || "/";
+      const redirect = redirectAfterAuth || "/dashboard";
       navigate(redirect);
     }
   }, [authLoading, isAuthenticated, navigate, redirectAfterAuth]);
@@ -65,11 +65,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     try {
       const formData = new FormData(event.currentTarget);
       await signIn("email-otp", formData);
-
-      console.log("signed in");
-
-      const redirect = redirectAfterAuth || "/";
-      navigate(redirect);
+      // Navigation happens via useEffect when isAuthenticated becomes true
     } catch (error) {
       console.error("OTP verification error:", error);
 
@@ -84,14 +80,10 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     setIsLoading(true);
     setError(null);
     try {
-      console.log("Attempting anonymous sign in...");
       await signIn("anonymous");
-      console.log("Anonymous sign in successful");
-      const redirect = redirectAfterAuth || "/";
-      navigate(redirect);
+      // Navigation happens via useEffect when isAuthenticated becomes true
     } catch (error) {
       console.error("Guest login error:", error);
-      console.error("Error details:", JSON.stringify(error, null, 2));
       setError(`Kunne ikke logge ind som gæst: ${error instanceof Error ? error.message : 'Ukendt fejl'}`);
       setIsLoading(false);
     }
