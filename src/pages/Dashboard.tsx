@@ -16,6 +16,7 @@ import {
   Plus,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { STATUS_LABELS, JOB_CATEGORY_LABELS } from "@/lib/constants";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -214,7 +215,7 @@ export default function Dashboard() {
                       <div>
                         <p className="font-bold">{job.title}</p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {job.category
+                          {JOB_CATEGORY_LABELS[job.category] || job.category
                             ?.split("-")
                             .map(
                               (w: string) =>

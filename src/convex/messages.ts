@@ -25,7 +25,7 @@ export function filterMessage(content: string): { filtered: string; wasFiltered:
     if (pattern.test(filtered)) {
       filtered = filtered.replace(pattern, (match) => "*".repeat(match.length));
       wasFiltered = true;
-      reason = "Message contained restricted content and was filtered for safety.";
+      reason = "Beskeden indeholdt begrænset indhold og blev filtreret af sikkerhedshensyn.";
     }
   }
 

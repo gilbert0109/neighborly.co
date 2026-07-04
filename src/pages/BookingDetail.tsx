@@ -100,7 +100,7 @@ export default function BookingDetail() {
   ) => {
     try {
       await updateStatus({ bookingId: bookingId as Id<"bookings">, status });
-      toast.success(`Booking ${STATUS_LABELS[status] || status}`);
+      toast.success(`${STATUS_LABELS[status] || status}`);
     } catch (e: any) {
       toast.error(e.message || "Kunne ikke opdatere status");
     }
