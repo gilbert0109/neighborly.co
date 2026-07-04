@@ -89,6 +89,59 @@ export const getMyJobs = query({
   },
 });
 
+/**
+ * Customer-facing query: returns the customer's posted jobs together with
+ * their current bookings, so the front-end can render "Afventer godkendelse"
+ * badges and let the customer approve incoming booking requests.
+ */
+export const getMyJobsWithBookings = query({
+  args: {},
+  handler: async (ctx) => {
+    const { userId, user } = await requireUser(ctx);
+    if (user.role !== "customer") return [];
+
+    const myJobs = await ctx.db
+      .query("jobs")
+      .withIndex("by_customer", (q) => q.eq("customerId", userId))
+      .order("desc")
+      .collect();
+
+    const results = await Promise.all(
+      myJobs.map(async (job) => {
+        const bookings = await ctx.db
+          .query("bookings")
+          .withIndex("by_job", (q) => q.eq("jobId", job._id))
+          .collect();
+
+        const pending = bookings.filter((b) => b.status === "pending");
+        const active = bookings.find(
+          (b) => b.status !== "cancelled" && b.status !== "completed",
+        );
+        const completed = bookings.filter((b) => b.status === "completed");
+
+        const helper = active ? await ctx.db.get(active.helperId) : null;
+        const pendingHelpers = await Promise.all(
+          pending.map((b) => ctx.db.get(b.helperId)),
+        );
+
+        return {
+          job,
+          pendingBookings: pending.map((b, i) => ({
+            ...b,
+            helper: pendingHelpers[i] ?? null,
+          })),
+          activeBooking: active
+            ? { ...active, helper: helper ?? null }
+            : null,
+          completedCount: completed.length,
+        };
+      }),
+    );
+
+    return results;
+  },
+});
+
 export const createJob = mutation({
   args: {
     title: v.string(),

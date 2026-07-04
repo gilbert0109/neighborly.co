@@ -107,8 +107,13 @@ export default function Landing() {
             onClick={() => navigate("/")}
             className="flex items-center gap-2 font-bold text-xl tracking-tight hover:opacity-80 transition-opacity"
           >
-            <div className="size-9 bg-primary flex items-center justify-center rounded-none">
-              <Wrench className="size-5 text-primary-foreground" />
+            <div className="size-9 bg-primary flex items-center justify-center rounded-none overflow-hidden">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+              >
+                <Wrench className="size-5 text-primary-foreground" />
+              </motion.div>
             </div>
             Neighborly
           </button>
@@ -446,8 +451,13 @@ export default function Landing() {
             {/* Brand */}
             <div>
               <div className="flex items-center gap-2 font-bold text-lg mb-3">
-                <div className="size-8 bg-primary flex items-center justify-center rounded-none">
-                  <Wrench className="size-4 text-primary-foreground" />
+                <div className="size-8 bg-primary flex items-center justify-center rounded-none overflow-hidden">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                  >
+                    <Wrench className="size-4 text-primary-foreground" />
+                  </motion.div>
                 </div>
                 Neighborly
               </div>

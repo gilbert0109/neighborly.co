@@ -14,6 +14,7 @@ import {
   Clock,
   ArrowRight,
   Plus,
+  MessageCircle,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { STATUS_LABELS, JOB_CATEGORY_LABELS } from "@/lib/constants";
@@ -122,33 +123,42 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Quick actions */}
+        {/* Quick actions — one per role. Customers post + manage, helpers browse + book. */}
         <div className="flex flex-wrap gap-3">
-          <Button
-            onClick={() => navigate("/jobs")}
-            className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)] hover:shadow-[1px_1px_0px_0px_var(--color-foreground)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-          >
-            <Briefcase className="size-4" />
-            Find opgaver
-            <ArrowRight className="size-4" />
-          </Button>
-          {user?.role === "customer" || !user?.role ? (
+          {user?.role === "helper" ? (
+            <Button
+              onClick={() => navigate("/jobs")}
+              className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)] hover:shadow-[1px_1px_0px_0px_var(--color-foreground)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+            >
+              <Briefcase className="size-4" />
+              Find opgaver
+              <ArrowRight className="size-4" />
+            </Button>
+          ) : (
             <Button
               onClick={() => navigate("/jobs/new")}
-              variant="outline"
               className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)] hover:shadow-[1px_1px_0px_0px_var(--color-foreground)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
             >
               <Plus className="size-4" />
               Opret opgave
+              <ArrowRight className="size-4" />
             </Button>
-          ) : null}
+          )}
           <Button
             onClick={() => navigate("/bookings")}
-            variant="secondary"
+            variant="outline"
             className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)] hover:shadow-[1px_1px_0px_0px_var(--color-foreground)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
             <CalendarCheck className="size-4" />
             Mine bookinger
+          </Button>
+          <Button
+            onClick={() => navigate("/conversations")}
+            variant="secondary"
+            className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)] hover:shadow-[1px_1px_0px_0px_var(--color-foreground)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+          >
+            <MessageCircle className="size-4" />
+            Beskeder
           </Button>
         </div>
 

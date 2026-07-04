@@ -16,11 +16,13 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { ArrowLeft, Send } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { JOB_CATEGORIES } from "@/lib/constants";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function PostJob() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const createJob = useMutation(api.jobs.createJob);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -30,6 +32,29 @@ export default function PostJob() {
   const [city, setCity] = useState("");
   const [scheduledDate, setScheduledDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Helpers can only solve work, not post it. The effect kicks the redirect
+  // but it would briefly flash the form on first paint, so we also gate
+  // render-time: as soon as we know role === "helper", hide the form.
+  // `replace: true` keeps the helper from browser-backing into it.
+  useEffect(() => {
+    if (user?.role === "helper") {
+      toast.error("Hjælpere kan ikke oprette opgaver — skift rolle i din profil.");
+      navigate("/dashboard", { replace: true });
+    }
+  }, [user, navigate]);
+
+  if (user?.role === "helper") {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[40vh]">
+          <div className="animate-pulse text-muted-foreground text-sm">
+            Omdirigerer…
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

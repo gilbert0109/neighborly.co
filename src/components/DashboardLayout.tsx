@@ -18,20 +18,33 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { cn } from "@/lib/utils";
 
-const navItems = [
-  { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { path: "/jobs/new", label: "Opret opgave", icon: PlusCircle },
-  { path: "/jobs", label: "Find opgaver", icon: Briefcase },
-  { path: "/bookings", label: "Bookinger", icon: ClipboardList },
-  { path: "/conversations", label: "Beskeder", icon: MessageSquare },
-  { path: "/profile", label: "Profil", icon: User },
-];
+// Nav items are split by role — customers shouldn't see "Find opgaver", and
+// helpers shouldn't see "Opret opgave".
+const allNavItems = {
+  customer: [
+    { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { path: "/jobs/new", label: "Opret opgave", icon: PlusCircle },
+    { path: "/bookings", label: "Bookinger", icon: ClipboardList },
+    { path: "/conversations", label: "Beskeder", icon: MessageSquare },
+    { path: "/profile", label: "Profil", icon: User },
+  ],
+  helper: [
+    { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { path: "/jobs", label: "Find opgaver", icon: Briefcase },
+    { path: "/bookings", label: "Bookinger", icon: ClipboardList },
+    { path: "/conversations", label: "Beskeder", icon: MessageSquare },
+    { path: "/profile", label: "Profil", icon: User },
+  ],
+} as const;
 
-function matchCurrentPath(pathname: string): string | undefined {
-  for (const item of navItems) {
+function matchCurrentPath(
+  pathname: string,
+  items: ReadonlyArray<{ path: string; label: string }>,
+): string | undefined {
+  for (const item of items) {
     if (pathname === item.path) return item.label;
   }
-  for (const item of navItems) {
+  for (const item of items) {
     if (pathname.startsWith(item.path + "/")) return item.label;
   }
   return undefined;
@@ -42,6 +55,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
   const totalUnread = useQuery(api.messages.getTotalUnreadCount);
+
+  // Pick role-appropriate nav. Users without a role fall back to "customer"
+  // (the safer default — they shouldn't see "Find opgaver" CTAs before
+  // they're committed to being a helper).
+  const navItems =
+    user?.role === "helper"
+      ? allNavItems.helper
+      : allNavItems.customer;
 
   const handleSignOut = async () => {
     try {
@@ -79,7 +100,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
           <SidebarContent>
             <SidebarMenu>
-              {navItems.map((item) => {
+              {navItems.map((item: any) => {
                 const isActive =
                   location.pathname === item.path ||
                   (item.path !== "/dashboard" &&
@@ -148,7 +169,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <header className="h-14 border-b-2 border-foreground flex items-center px-4 gap-3 shrink-0">
             <SidebarTrigger className="rounded-none border-2 border-foreground" />
             <h1 className="font-bold text-lg truncate">
-              {matchCurrentPath(location.pathname) || "Neighborly"}
+              {matchCurrentPath(location.pathname, navItems as ReadonlyArray<{ path: string; label: string }>) || "Neighborly"}
             </h1>
           </header>
           <main className="flex-1 overflow-auto p-4 md:p-6">{children}</main>
