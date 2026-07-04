@@ -88,6 +88,13 @@ const schema = defineSchema(
           v.literal("rejected"),
         ),
       ),
+      // MitID identity verification (Danish national eID)
+      mitidSub: v.optional(v.string()),
+      mitidName: v.optional(v.string()),
+      mitidVerifiedAt: v.optional(v.number()),
+      mitidAssuranceLevel: v.optional(
+        v.union(v.literal("substantial"), v.literal("high")),
+      ),
       parentApproved: v.optional(v.boolean()),
       parentEmail: v.optional(v.string()),
       banned: v.optional(v.boolean()),
@@ -101,7 +108,8 @@ const schema = defineSchema(
       .index("email", ["email"])
       .index("by_role", ["role"])
       .index("by_verification", ["verificationStatus"])
-      .index("by_banned", ["banned"]),
+      .index("by_banned", ["banned"])
+      .index("by_mitid_sub", ["mitidSub"]),
 
     jobs: defineTable({
       customerId: v.id("users"),
@@ -229,6 +237,20 @@ const schema = defineSchema(
       acceptedAt: v.number(),
       version: v.string(),
     }).index("by_user", ["userId"]),
+
+    mitidVerifications: defineTable({
+      userId: v.id("users"),
+      state: v.string(), // CSRF protection nonce
+      nonce: v.string(), // ID token nonce (replay protection)
+      codeVerifier: v.string(), // PKCE verifier
+      codeChallenge: v.string(), // SHA256(codeVerifier) base64url-encoded
+      redirectUri: v.string(),
+      mode: v.union(v.literal("sandbox"), v.literal("production")),
+      createdAt: v.number(),
+      expiresAt: v.number(), // ~5 minutes
+      isConsumed: v.optional(v.boolean()),
+      consumedAt: v.optional(v.number()),
+    }).index("by_state", ["state"]),
   },
   {
     schemaValidation: false,

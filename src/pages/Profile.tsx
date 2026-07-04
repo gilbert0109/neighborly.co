@@ -26,17 +26,36 @@ import {
   CheckCircle,
   MapPin,
   Calendar,
+  Loader2,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router";
+
+// Tiny MitID logo for inline use
+function MitIDMark({ className = "size-5" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="currentColor"
+      aria-label="MitID"
+    >
+      <path d="M9 2h6v6h6v6h-6v6H9v-6H3V8h6V2z" />
+    </svg>
+  );
+}
 
 export default function Profile() {
   const { user, signOut } = useAuth();
   const updateProfile = useMutation(api.users.updateProfile);
   const setRole = useMutation(api.users.setRole);
-  const requestVerification = useMutation(api.users.requestVerification);
+  const startMitID = useMutation(api.mitid.startMitIDVerification);
+  const revokeMitID = useMutation(api.mitid.revokeMitIDVerification);
+  const mitIDStatus = useQuery(api.mitid.getMitIDStatus);
   const setAvailability = useMutation(api.availability.setAvailability);
   const availability = useQuery(api.availability.getMyAvailability);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [name, setName] = useState(user?.name || "");
   const [age, setAge] = useState(user?.age?.toString() || "");
@@ -46,7 +65,28 @@ export default function Profile() {
   const [city, setCity] = useState(user?.city || "");
   const [role, setRoleState] = useState(user?.role || "");
   const [isSaving, setIsSaving] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
+  const [isStartingMitID, setIsStartingMitID] = useState(false);
+  const [isRevokingMitID, setIsRevokingMitID] = useState(false);
+
+  // Handle return from the MitID callback (?mitid=success|error)
+  useEffect(() => {
+    const mitid = searchParams.get("mitid");
+    if (mitid === "success") {
+      toast.success("Verificeret med MitID!");
+      searchParams.delete("mitid");
+      setSearchParams(searchParams, { replace: true });
+    } else if (mitid === "error") {
+      const reason = searchParams.get("reason");
+      toast.error(
+        reason === "user_cancelled"
+          ? "MitID-verifikation annulleret."
+          : `MitID-verifikation fejlede: ${reason || "ukendt fejl"}`,
+      );
+      searchParams.delete("mitid");
+      searchParams.delete("reason");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams, toast]);
 
   // Availability state for helpers
   const daysOfWeek = ["Søn", "Man", "Tir", "Ons", "Tor", "Fre", "Lør"];
@@ -95,15 +135,30 @@ export default function Profile() {
     }
   };
 
-  const handleRequestVerification = async () => {
-    setIsVerifying(true);
+  const handleStartMitID = async () => {
+    setIsStartingMitID(true);
     try {
-      await requestVerification();
-      toast.success("Verifikation anmodet!");
+      const { url } = await startMitID({ origin: window.location.origin });
+      // Hard navigation — the MitID broker is a separate origin/device.
+      window.location.href = url;
     } catch (e: any) {
-      toast.error(e.message || "Kunne ikke anmode om verifikation");
+      toast.error(e.message || "Kunne ikke starte MitID-flow");
+      setIsStartingMitID(false);
+    }
+  };
+
+  const handleRevokeMitID = async () => {
+    if (!window.confirm("Er du sikker på, at du vil frakoble MitID fra din konto?")) {
+      return;
+    }
+    setIsRevokingMitID(true);
+    try {
+      await revokeMitID();
+      toast.success("MitID frakoblet");
+    } catch (e: any) {
+      toast.error(e.message || "Kunne ikke frakoble MitID");
     } finally {
-      setIsVerifying(false);
+      setIsRevokingMitID(false);
     }
   };
 
@@ -306,31 +361,94 @@ export default function Profile() {
             </CardContent>
           </Card>
 
-          {/* Verification */}
-          {!user?.isVerified && user?.verificationStatus !== "pending" && (
-            <Card className="rounded-none border-2 border-foreground">
+          {/* MitID verification */}
+          {user?.isVerified && user?.mitidVerifiedAt ? (
+            <Card className="rounded-none border-2 border-[#c8102e] shadow-[4px_4px_0px_0px_var(--color-foreground)]">
               <CardHeader>
                 <CardTitle className="text-lg font-black flex items-center gap-2">
-                  <Shield className="size-5" />
-                  Bliv verificeret
+                  <div className="size-7 bg-[#c8102e] flex items-center justify-center">
+                    <MitIDMark className="size-4 text-white" />
+                  </div>
+                  Verificeret med MitID
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <p className="text-sm text-muted-foreground">
-                  Verifikation skaber tillid blandt naboer og låser op for alle
-                  funktioner. Det er påkrævet for hjælpere for at booke opgaver.
+                <div className="flex items-center gap-3 p-3 bg-green-50 border-2 border-green-600">
+                  <CheckCircle className="size-5 text-green-700 shrink-0" />
+                  <div>
+                    <p className="font-bold text-green-900">
+                      Identitet bekræftet via MitID
+                      {user.mitidAssuranceLevel === "high" && (
+                        <span className="ml-2 text-xs bg-green-700 text-white px-1.5 py-0.5 border border-green-900">
+                          Høj tillid
+                        </span>
+                      )}
+                    </p>
+                    <p className="text-xs text-green-800">
+                      {user.mitidName && <>Verificeret som {user.mitidName} · </>}
+                      Bekræftet den{" "}
+                      {new Date(user.mitidVerifiedAt).toLocaleDateString("da-DK", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Dit MitID er knyttet til denne konto. Det øger tilliden blandt
+                  naboer og gør det nemmere at samarbejde i nabolaget.
                 </p>
                 <Button
-                  onClick={handleRequestVerification}
-                  disabled={isVerifying}
-                  variant="outline"
-                  className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)]"
+                  variant="ghost"
+                  onClick={handleRevokeMitID}
+                  disabled={isRevokingMitID}
+                  className="text-xs text-muted-foreground h-auto p-0 hover:bg-transparent"
                 >
-                  <Shield className="size-4" />
-                  {isVerifying
-                    ? "Anmoder..."
-                    : "Anmod om verifikation"}
+                  {isRevokingMitID ? "Frakobler..." : "Frakobl MitID og verificér igen"}
                 </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0px_0px_var(--color-foreground)]">
+              <CardHeader>
+                <CardTitle className="text-lg font-black flex items-center gap-2">
+                  <Shield className="size-5" />
+                  Bliv verificeret med MitID
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Verificér din identitet med MitID — Danmarks officielle
+                  digitale ID. Det tager 30 sekunder og skaber tillid blandt
+                  naboer.
+                </p>
+                <Button
+                  onClick={handleStartMitID}
+                  disabled={isStartingMitID}
+                  className="w-full h-12 rounded-none bg-[#c8102e] hover:bg-[#a50d24] text-white font-bold shadow-[0_4px_0_0_#7a0a1a] hover:shadow-[0_2px_0_0_#7a0a1a] hover:translate-y-[2px] transition-all"
+                >
+                  {isStartingMitID ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" />
+                      Forbinder til MitID...
+                    </>
+                  ) : (
+                    <>
+                      <MitIDMark className="size-5 text-white" />
+                      Verificér med MitID
+                    </>
+                  )}
+                </Button>
+                <p className="text-xs text-muted-foreground text-center">
+                  {mitIDStatus?.mode === "sandbox"
+                    ? "Du videresendes til Neighborlys MitID-testmiljø (sandbox)."
+                    : "Du videresendes til NemLog-in / din MitID-broker."}
+                </p>
+                <p className="text-[11px] text-muted-foreground text-center">
+                  MitID er udbudt af Digitaliseringsstyrelsen. Vi ser kun dit navn
+                  og et unikt ID — aldrig din adgangskode.
+                </p>
               </CardContent>
             </Card>
           )}

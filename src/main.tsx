@@ -23,6 +23,8 @@ const Bookings = lazy(() => import("./pages/Bookings.tsx"));
 const BookingDetail = lazy(() => import("./pages/BookingDetail.tsx"));
 const Conversations = lazy(() => import("./pages/Conversations.tsx"));
 const Onboarding = lazy(() => import("./pages/Onboarding.tsx"));
+const MitIDSandbox = lazy(() => import("./pages/MitIDSandbox.tsx"));
+const MitIDCallback = lazy(() => import("./pages/MitIDCallback.tsx"));
 const Profile = lazy(() => import("./pages/Profile.tsx"));
 
 // Simple loading fallback for route transitions
@@ -81,6 +83,8 @@ createRoot(document.getElementById("root")!).render(
               <Route path="/bookings/:bookingId" element={<ProtectedRoute><BookingDetail /></ProtectedRoute>} />
               <Route path="/conversations" element={<ProtectedRoute><Conversations /></ProtectedRoute>} />
               <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+              <Route path="/mitid-sandbox" element={<MitIDSandbox />} />
+              <Route path="/mitid-callback" element={<ProtectedRoute><MitIDCallback /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
