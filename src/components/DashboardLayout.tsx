@@ -11,14 +11,19 @@ import {
   User,
   LogOut,
   Wrench,
+  MessageSquare,
+  ClipboardList,
 } from "lucide-react";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { path: "/jobs/new", label: "Opret opgave", icon: PlusCircle },
   { path: "/jobs", label: "Find opgaver", icon: Briefcase },
-  { path: "/bookings", label: "Mine bookinger", icon: CalendarCheck },
+  { path: "/bookings", label: "Bookinger", icon: ClipboardList },
+  { path: "/conversations", label: "Beskeder", icon: MessageSquare },
   { path: "/profile", label: "Profil", icon: User },
 ];
 
@@ -36,6 +41,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const totalUnread = useQuery(api.messages.getTotalUnreadCount);
 
   const handleSignOut = async () => {
     try {
@@ -95,7 +101,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                       )}
                     >
                       <item.icon className="size-4" />
-                      <span>{item.label}</span>
+                      <span className="flex-1">{item.label}</span>
+                      {item.path === "/conversations" &&
+                        totalUnread !== undefined &&
+                        totalUnread > 0 && (
+                          <span className="bg-primary text-primary-foreground text-[10px] font-bold px-1.5 py-0.5 min-w-[18px] text-center border border-foreground leading-none">
+                            {totalUnread > 99 ? "99+" : totalUnread}
+                          </span>
+                        )}
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );

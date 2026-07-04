@@ -21,6 +21,7 @@ const JobDetail = lazy(() => import("./pages/JobDetail.tsx"));
 const PostJob = lazy(() => import("./pages/PostJob.tsx"));
 const Bookings = lazy(() => import("./pages/Bookings.tsx"));
 const BookingDetail = lazy(() => import("./pages/BookingDetail.tsx"));
+const Conversations = lazy(() => import("./pages/Conversations.tsx"));
 const Profile = lazy(() => import("./pages/Profile.tsx"));
 
 // Simple loading fallback for route transitions
@@ -77,6 +78,7 @@ createRoot(document.getElementById("root")!).render(
               <Route path="/jobs/:jobId" element={<ProtectedRoute><JobDetail /></ProtectedRoute>} />
               <Route path="/bookings" element={<ProtectedRoute><Bookings /></ProtectedRoute>} />
               <Route path="/bookings/:bookingId" element={<ProtectedRoute><BookingDetail /></ProtectedRoute>} />
+              <Route path="/conversations" element={<ProtectedRoute><Conversations /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -176,6 +176,7 @@ const schema = defineSchema(
       content: v.string(),
       isFiltered: v.optional(v.boolean()),
       filterReason: v.optional(v.string()),
+      isRead: v.optional(v.boolean()),
       createdAt: v.number(),
     })
       .index("by_booking", ["bookingId"])

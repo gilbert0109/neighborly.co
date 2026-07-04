@@ -89,3 +89,142 @@ export const getMessages = query({
     return messages;
   },
 });
+
+export const getMyConversations = query({
+  args: {},
+  handler: async (ctx) => {
+    const { userId, user } = await requireUser(ctx);
+
+    let bookings;
+    if (user.role === "helper") {
+      bookings = await ctx.db
+        .query("bookings")
+        .withIndex("by_helper", (q) => q.eq("helperId", userId))
+        .order("desc")
+        .collect();
+    } else {
+      bookings = await ctx.db
+        .query("bookings")
+        .withIndex("by_customer", (q) => q.eq("customerId", userId))
+        .order("desc")
+        .collect();
+    }
+
+    const conversations = await Promise.all(
+      bookings.map(async (b) => {
+        const job = await ctx.db.get(b.jobId);
+        const otherPersonId =
+          b.customerId === userId ? b.helperId : b.customerId;
+        const otherPerson = await ctx.db.get(otherPersonId);
+
+        // Get latest message for preview
+        const latestMessages = await ctx.db
+          .query("messages")
+          .withIndex("by_booking", (q) => q.eq("bookingId", b._id))
+          .order("desc")
+          .take(1);
+
+        // Count unread messages (sent to current user, not by current user)
+        const unreadMessages = await ctx.db
+          .query("messages")
+          .withIndex("by_booking", (q) => q.eq("bookingId", b._id))
+          .filter((q) =>
+            q.and(
+              q.eq(q.field("receiverId"), userId),
+              q.eq(q.field("isRead"), undefined),
+            ),
+          )
+          .collect();
+
+        return {
+          booking: b,
+          job: job
+            ? { title: job.title, category: job.category, address: job.address, city: job.city }
+            : null,
+          otherPerson: otherPerson
+            ? { name: otherPerson.name, image: otherPerson.image, averageRating: otherPerson.averageRating }
+            : null,
+          latestMessage: latestMessages[0] ?? null,
+          unreadCount: unreadMessages.length,
+        };
+      }),
+    );
+
+    // Sort: conversations with unread messages first, then by latest message time
+    conversations.sort((a, b) => {
+      const aUnread = a.unreadCount > 0 ? 1 : 0;
+      const bUnread = b.unreadCount > 0 ? 1 : 0;
+      if (aUnread !== bUnread) return bUnread - aUnread;
+      const aTime = a.latestMessage?.createdAt ?? a.booking.createdAt;
+      const bTime = b.latestMessage?.createdAt ?? b.booking.createdAt;
+      return bTime - aTime;
+    });
+
+    return conversations;
+  },
+});
+
+export const markAsRead = mutation({
+  args: { bookingId: v.id("bookings") },
+  handler: async (ctx, args) => {
+    const { userId } = await requireUser(ctx);
+    const booking = await ctx.db.get(args.bookingId);
+    if (!booking) throw new Error("Booking ikke fundet");
+    if (booking.helperId !== userId && booking.customerId !== userId) {
+      throw new Error("Ikke en del af denne booking");
+    }
+
+    const unread = await ctx.db
+      .query("messages")
+      .withIndex("by_booking", (q) => q.eq("bookingId", args.bookingId))
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("receiverId"), userId),
+          q.eq(q.field("isRead"), undefined),
+        ),
+      )
+      .collect();
+
+    await Promise.all(
+      unread.map((msg) => ctx.db.patch(msg._id, { isRead: true })),
+    );
+  },
+});
+
+export const getTotalUnreadCount = query({
+  args: {},
+  handler: async (ctx) => {
+    const { userId, user } = await requireUser(ctx);
+
+    let bookings;
+    if (user.role === "helper") {
+      bookings = await ctx.db
+        .query("bookings")
+        .withIndex("by_helper", (q) => q.eq("helperId", userId))
+        .collect();
+    } else {
+      bookings = await ctx.db
+        .query("bookings")
+        .withIndex("by_customer", (q) => q.eq("customerId", userId))
+        .collect();
+    }
+
+    const counts = await Promise.all(
+      bookings.map(async (b) => {
+        const unread = await ctx.db
+          .query("messages")
+          .withIndex("by_booking", (q) => q.eq("bookingId", b._id))
+          .filter((q) =>
+            q.and(
+              q.eq(q.field("receiverId"), userId),
+              q.eq(q.field("isRead"), undefined),
+            ),
+          )
+          .collect();
+        return unread.length;
+      }),
+    );
+
+    return counts.reduce((sum, c) => sum + c, 0);
+  },
+});

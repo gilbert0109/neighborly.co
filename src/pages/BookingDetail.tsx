@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/use-auth";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, useConvex } from "convex/react";
 import { api, type Id } from "@/convex/_generated/api";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
@@ -54,6 +54,21 @@ export default function BookingDetail() {
   const [reviewComment, setReviewComment] = useState("");
   const [isReviewing, setIsReviewing] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const convex = useConvex();
+
+  // Mark messages as read when viewing chat
+  useEffect(() => {
+    if (bookingId && rawMessages && rawMessages.length > 0) {
+      const hasUnread = rawMessages.some(
+        (msg: any) => msg.receiverId === user?._id && !msg.isRead
+      );
+      if (hasUnread) {
+        convex.mutation(api.messages.markAsRead, {
+          bookingId: bookingId as Id<"bookings">,
+        });
+      }
+    }
+  }, [bookingId, rawMessages, user?._id]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
