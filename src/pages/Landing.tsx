@@ -1,4 +1,4 @@
-import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef, useState } from "react";
 import {
   Leaf,
@@ -92,7 +92,6 @@ export default function Landing() {
   const { isAuthenticated } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
-  const reduceMotion = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: heroRef,
     offset: ["start start", "end start"],
@@ -108,14 +107,8 @@ export default function Landing() {
           <button
             onClick={() => navigate("/")}
             className="flex items-center gap-2 font-bold text-xl tracking-tight hover:opacity-80 transition-opacity"
-          >
-            <div className="size-9 bg-primary flex items-center justify-center rounded-none overflow-hidden">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-              >
-                <Wrench className="size-5 text-primary-foreground" />
-              </motion.div>
+          >                <div className="size-9 bg-primary flex items-center justify-center rounded-none overflow-hidden">
+              <Wrench className="size-5 text-primary-foreground" />
             </div>
             Neighborly
           </button>
@@ -218,12 +211,7 @@ export default function Landing() {
 
         <div className="max-w-6xl mx-auto px-4 pt-24 pb-20 md:pt-32 md:pb-28">
           <div className="max-w-3xl mx-auto text-center">
-            {/* ─── Spinning Neighborly logo centerpiece ───
-                The emblem is the brand — there's no separate static wordmark
-                below it (the existing marketing h1 below conveys the value
-                prop, and the header already carries the wordmark in the
-                corner). `prefers-reduced-motion` users get a soft pulse
-                instead of full rotation. */}
+            {/* ─── Neighborly logo centerpiece (static) ─── */}
             <motion.div
               initial={{ opacity: 0, scale: 0.7 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -234,24 +222,11 @@ export default function Landing() {
                 className="relative border-4 border-foreground rounded-full overflow-hidden"
                 style={{ boxShadow: "10px 10px 0px 0px var(--color-foreground)" }}
               >
-                {reduceMotion ? (
-                  // Accessible fallback — gentle pulse, no rotation.
-                  <motion.img
-                    src={logo}
-                    alt="Neighborly emblem"
-                    animate={{ scale: [1, 1.04, 1] }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                    className="size-48 sm:size-60 block"
-                  />
-                ) : (
-                  <motion.img
-                    src={logo}
-                    alt="Neighborly emblem"
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 14, repeat: Infinity, ease: "linear" }}
-                    className="size-48 sm:size-60 block"
-                  />
-                )}
+                <img
+                  src={logo}
+                  alt="Neighborly emblem"
+                  className="size-48 sm:size-60 block"
+                />
               </div>
             </motion.div>
 
@@ -491,12 +466,7 @@ export default function Landing() {
             <div>
               <div className="flex items-center gap-2 font-bold text-lg mb-3">
                 <div className="size-8 bg-primary flex items-center justify-center rounded-none overflow-hidden">
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                  >
-                    <Wrench className="size-4 text-primary-foreground" />
-                  </motion.div>
+                  <Wrench className="size-4 text-primary-foreground" />
                 </div>
                 Neighborly
               </div>
