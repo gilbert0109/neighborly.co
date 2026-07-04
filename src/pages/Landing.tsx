@@ -26,7 +26,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
 import { useAuth } from "@/hooks/use-auth";
-import logo from "@/assets/logo.svg";
 
 const jobCategories = [
   { icon: Leaf, label: "Græsslåning", color: "text-green-600" },
@@ -211,24 +210,7 @@ export default function Landing() {
 
         <div className="max-w-6xl mx-auto px-4 pt-24 pb-20 md:pt-32 md:pb-28">
           <div className="max-w-3xl mx-auto text-center">
-            {/* ─── Neighborly logo centerpiece (static) ─── */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.7 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.7, type: "spring", bounce: 0.3 }}
-              className="mb-10 flex justify-center"
-            >
-              <div
-                className="relative border-4 border-foreground rounded-full overflow-hidden"
-                style={{ boxShadow: "10px 10px 0px 0px var(--color-foreground)" }}
-              >
-                <img
-                  src={logo}
-                  alt="Neighborly emblem"
-                  className="size-48 sm:size-60 block"
-                />
-              </div>
-            </motion.div>
+
 
             {/* Badge */}
             <motion.div
