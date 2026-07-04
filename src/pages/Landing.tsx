@@ -28,61 +28,61 @@ import { useNavigate } from "react-router";
 import { useAuth } from "@/hooks/use-auth";
 
 const jobCategories = [
-  { icon: Leaf, label: "Lawn Mowing", color: "text-green-600" },
-  { icon: Flower, label: "Gardening", color: "text-emerald-600" },
-  { icon: Dog, label: "Dog Walking", color: "text-amber-600" },
-  { icon: Snowflake, label: "Snow Shoveling", color: "text-blue-500" },
-  { icon: Car, label: "Car Washing", color: "text-sky-500" },
-  { icon: Wind, label: "Leaf Raking", color: "text-orange-600" },
-  { icon: ShoppingCart, label: "Grocery Delivery", color: "text-rose-500" },
-  { icon: Sofa, label: "Furniture Moving", color: "text-purple-600" },
-  { icon: Bike, label: "Bike Repair", color: "text-cyan-600" },
+  { icon: Leaf, label: "Græsslåning", color: "text-green-600" },
+  { icon: Flower, label: "Havearbejde", color: "text-emerald-600" },
+  { icon: Dog, label: "Luftning af hund", color: "text-amber-600" },
+  { icon: Snowflake, label: "Snerydning", color: "text-blue-500" },
+  { icon: Car, label: "Bilvask", color: "text-sky-500" },
+  { icon: Wind, label: "Løvrivning", color: "text-orange-600" },
+  { icon: ShoppingCart, label: "Indkøbslevering", color: "text-rose-500" },
+  { icon: Sofa, label: "Møbelflytning", color: "text-purple-600" },
+  { icon: Bike, label: "Cykelreparation", color: "text-cyan-600" },
 ];
 
 const features = [
   {
     icon: Shield,
-    title: "Verified Neighbors",
+    title: "Verificerede naboer",
     description:
-      "Every helper is verified through our community trust system. Know who's coming to your door.",
+      "Alle hjælpere er verificeret gennem vores fællesskabs-baserede tillidssystem. Ved, hvem der kommer til din dør.",
   },
   {
     icon: Star,
-    title: "Rated & Reviewed",
+    title: "Bedømt & anmeldt",
     description:
-      "Read honest reviews from your actual neighbors. Build trust through shared experiences.",
+      "Læs ærlige anmeldelser fra dine faktiske naboer. Opbyg tillid gennem fælles oplevelser.",
   },
   {
     icon: Clock,
-    title: "Fast & Flexible",
+    title: "Hurtigt & fleksibelt",
     description:
-      "Book help for today or schedule ahead. Find someone available when you need them.",
+      "Book hjælp til i dag eller planlæg frem i tiden. Find nogen, der er ledig, når du har brug for dem.",
   },
   {
     icon: MessageCircle,
-    title: "Direct Messaging",
+    title: "Direkte beskeder",
     description:
-      "Chat with your helper before they arrive. Discuss details, share photos, stay in sync.",
+      "Chat med din hjælper, før de ankommer. Diskuter detaljer, del billeder, hold kontakten.",
   },
 ];
 
 const steps = [
   {
     icon: ClipboardList,
-    title: "Post a Task",
-    description: "Describe what you need done, set your price, and pick a time.",
+    title: "Opret en opgave",
+    description: "Beskriv, hvad du har brug for, sæt din pris, og vælg et tidspunkt.",
   },
   {
     icon: Search,
-    title: "Get Matched",
+    title: "Bliv matchet",
     description:
-      "Trusted helpers in your neighborhood see your task and offer to help.",
+      "Betroede hjælpere i dit nabolag ser din opgave og tilbyder at hjælpe.",
   },
   {
     icon: CheckCircle,
-    title: "Job Done Right",
+    title: "Opgaven løst",
     description:
-      "Your neighbor shows up, gets it done, and you both rate the experience.",
+      "Din nabo møder op, får det gjort, og I bedømmer begge oplevelsen.",
   },
 ];
 
@@ -119,25 +119,25 @@ export default function Landing() {
               href="#how-it-works"
               className="hover:text-primary transition-colors"
             >
-              How It Works
+              Sådan virker det
             </a>
             <a
               href="#categories"
               className="hover:text-primary transition-colors"
             >
-              Services
+              Ydelser
             </a>
             <a
               href="#features"
               className="hover:text-primary transition-colors"
             >
-              Why Neighborly
+              Hvorfor Neighborly
             </a>
             <Button
               onClick={() => navigate("/auth")}
               className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)] hover:shadow-[1px_1px_0px_0px_var(--color-foreground)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
             >
-              {isAuthenticated ? "Dashboard" : "Sign In"}
+              {isAuthenticated ? "Dashboard" : "Log ind"}
               <ArrowRight className="size-4" />
             </Button>
           </div>
@@ -168,21 +168,21 @@ export default function Landing() {
               onClick={() => setMobileMenuOpen(false)}
               className="text-sm font-medium hover:text-primary transition-colors py-2"
             >
-              How It Works
+              Sådan virker det
             </a>
             <a
               href="#categories"
               onClick={() => setMobileMenuOpen(false)}
               className="text-sm font-medium hover:text-primary transition-colors py-2"
             >
-              Services
+              Ydelser
             </a>
             <a
               href="#features"
               onClick={() => setMobileMenuOpen(false)}
               className="text-sm font-medium hover:text-primary transition-colors py-2"
             >
-              Why Neighborly
+              Hvorfor Neighborly
             </a>
             <Button
               onClick={() => {
@@ -191,7 +191,7 @@ export default function Landing() {
               }}
               className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)] w-full mt-2"
             >
-              {isAuthenticated ? "Dashboard" : "Sign In"}
+              {isAuthenticated ? "Dashboard" : "Log ind"}
               <ArrowRight className="size-4" />
             </Button>
           </motion.div>
@@ -220,7 +220,7 @@ export default function Landing() {
             >
               <Sparkles className="size-4" />
               <span className="text-sm font-semibold uppercase tracking-wider">
-                Your Neighborhood, Connected
+                Dit nabolag, forbundet
               </span>
             </motion.div>
 
@@ -230,8 +230,8 @@ export default function Landing() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-[1.05] tracking-tight mb-6"
             >
-              Get things done by{" "}
-              <span className="text-primary">people next door</span>
+              Få tingene gjort af{" "}
+              <span className="text-primary">folk ved siden af</span>
             </motion.h1>
 
             <motion.p
@@ -240,8 +240,8 @@ export default function Landing() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto mb-10 leading-relaxed"
             >
-              Hire trusted neighbors for lawn care, dog walking, snow shoveling,
-              and more. Or earn money helping out in your own community.
+              Hyr betroede naboer til græsslåning, luftning af hund, snerydning
+              og meget mere. Eller tjen penge ved at hjælpe til i dit eget nabolag.
             </motion.p>
 
             <motion.div
@@ -255,7 +255,7 @@ export default function Landing() {
                 size="lg"
                 className="rounded-none border-2 border-foreground shadow-[4px_4px_0px_0px_var(--color-foreground)] hover:shadow-[2px_2px_0px_0px_var(--color-foreground)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-base px-8 h-14"
               >
-                Get Started
+                Kom i gang
                 <ArrowRight className="size-5" />
               </Button>
               <a href="#how-it-works">
@@ -264,7 +264,7 @@ export default function Landing() {
                   size="lg"
                   className="rounded-none border-2 border-foreground shadow-[4px_4px_0px_0px_var(--color-foreground)] hover:shadow-[2px_2px_0px_0px_var(--color-foreground)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-base px-8 h-14"
                 >
-                  How It Works
+                  Sådan virker det
                 </Button>
               </a>
             </motion.div>
@@ -285,11 +285,11 @@ export default function Landing() {
             className="text-center mb-16"
           >
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight mb-4">
-              How it works
+              Sådan virker det
             </h2>
             <p className="text-muted-foreground text-lg max-w-lg mx-auto">
-              Three simple steps to get help or start earning in your
-              neighborhood.
+              Tre enkle trin for at få hjælp eller begynde at tjene penge i dit
+              nabolag.
             </p>
           </motion.div>
 
@@ -333,11 +333,11 @@ export default function Landing() {
             className="text-center mb-16"
           >
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight mb-4">
-              Neighborhood services
+              Nabolagets ydelser
             </h2>
             <p className="text-muted-foreground text-lg max-w-lg mx-auto">
-              From lawn care to furniture moving — whatever you need, a neighbor
-              can help.
+              Fra græsslåning til møbelflytning — hvad end du har brug for, kan en nabo
+              hjælpe.
             </p>
           </motion.div>
 
@@ -372,11 +372,11 @@ export default function Landing() {
             className="text-center mb-16"
           >
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight mb-4">
-              Why neighbors trust Neighborly
+              Derfor stoler naboer på Neighborly
             </h2>
             <p className="text-muted-foreground text-lg max-w-lg mx-auto">
-              We're building the safest, most reliable way to get things done
-              locally.
+              Vi bygger den sikreste og mest pålidelige måde at få tingene gjort
+              lokalt.
             </p>
           </motion.div>
 
@@ -418,11 +418,11 @@ export default function Landing() {
             transition={{ duration: 0.5 }}
           >
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight mb-6 text-primary-foreground">
-              Ready to meet your neighbors?
+              Klar til at møde dine naboer?
             </h2>
             <p className="text-primary-foreground/80 text-lg max-w-lg mx-auto mb-10 leading-relaxed">
-              Join the neighborhood. Post your first task or sign up to help
-              others. It takes less than a minute.
+              Bliv en del af nabolaget. Opret din første opgave eller tilmeld dig for
+              at hjælpe andre. Det tager under et minut.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
@@ -431,7 +431,7 @@ export default function Landing() {
                 variant="outline"
                 className="rounded-none border-2 border-primary-foreground bg-primary-foreground text-foreground shadow-[4px_4px_0px_0px_var(--color-foreground)] hover:shadow-[2px_2px_0px_0px_var(--color-foreground)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-base px-8 h-14 font-bold"
               >
-                Get Started Free
+                Kom gratis i gang
                 <ArrowRight className="size-5" />
               </Button>
             </div>
@@ -452,7 +452,7 @@ export default function Landing() {
                 Neighborly
               </div>
               <p className="text-sm text-muted-foreground">
-                Connecting neighbors, one task at a time.
+                Forbinder naboer, én opgave ad gangen.
               </p>
             </div>
 
@@ -462,9 +462,9 @@ export default function Landing() {
                 Platform
               </h4>
               <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-                <a href="#how-it-works" className="hover:text-foreground transition-colors">How It Works</a>
-                <a href="#categories" className="hover:text-foreground transition-colors">Services</a>
-                <a href="#features" className="hover:text-foreground transition-colors">Safety</a>
+                <a href="#how-it-works" className="hover:text-foreground transition-colors">Sådan virker det</a>
+                <a href="#categories" className="hover:text-foreground transition-colors">Ydelser</a>
+                <a href="#features" className="hover:text-foreground transition-colors">Sikkerhed</a>
               </div>
             </div>
 
@@ -472,10 +472,10 @@ export default function Landing() {
 
           <div className="border-t-2 border-foreground pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-xs text-muted-foreground">
-              &copy; {new Date().getFullYear()} Neighborly. All rights reserved.
+              &copy; {new Date().getFullYear()} Neighborly. Alle rettigheder forbeholdes.
             </p>
             <p className="text-xs text-muted-foreground">
-              Made with &hearts; for neighborhoods everywhere.
+              Lavet med &hearts; til nabolag overalt.
             </p>
           </div>
         </div>

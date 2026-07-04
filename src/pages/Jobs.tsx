@@ -57,9 +57,9 @@ export default function Jobs() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-black">Browse Jobs</h2>
+            <h2 className="text-2xl sm:text-3xl font-black">Find opgaver</h2>
             <p className="text-muted-foreground mt-1">
-              Find tasks in your neighborhood
+              Find opgaver i dit nabolag
             </p>
           </div>
           <Button
@@ -67,7 +67,7 @@ export default function Jobs() {
             className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)] hover:shadow-[1px_1px_0px_0px_var(--color-foreground)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all shrink-0"
           >
             <Briefcase className="size-4" />
-            Post a Job
+            Opret opgave
           </Button>
         </div>
 
@@ -76,7 +76,7 @@ export default function Jobs() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-3 size-4 text-muted-foreground" />
             <Input
-              placeholder="Search jobs by title, description, or city..."
+              placeholder="Søg efter titel, beskrivelse eller by..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9 rounded-none border-2 border-foreground"
@@ -92,7 +92,7 @@ export default function Jobs() {
               className="rounded-none cursor-pointer border border-foreground"
               onClick={() => setFilterCat(null)}
             >
-              All
+              Alle
             </Badge>
             {categories.map((cat) => (
               <Badge
@@ -119,12 +119,12 @@ export default function Jobs() {
             <CardContent className="py-12 text-center">
               <Search className="size-10 text-muted-foreground mx-auto mb-4" />
               <p className="text-lg font-bold text-muted-foreground">
-                No jobs found
+                Ingen opgaver fundet
               </p>
               <p className="text-sm text-muted-foreground mt-2">
                 {jobs?.length === 0
-                  ? "No one has posted any jobs yet. Be the first!"
-                  : "Try adjusting your search or filters."}
+                  ? "Ingen har oprettet opgaver endnu. Vær den første!"
+                  : "Prøv at justere din søgning eller filtre."}
               </p>
             </CardContent>
           </Card>
@@ -174,7 +174,7 @@ export default function Jobs() {
                         </span>
                       )}
                       <span className="ml-auto flex items-center gap-1 text-sm font-semibold text-primary">
-                        View
+                        Se mere
                         <ArrowRight className="size-3" />
                       </span>
                     </div>

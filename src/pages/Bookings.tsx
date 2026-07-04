@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useMemo } from "react";
-import { STATUS_COLORS } from "@/lib/constants";
+import { STATUS_COLORS, STATUS_LABELS } from "@/lib/constants";
 
 export default function Bookings() {
   const navigate = useNavigate();
@@ -45,9 +45,9 @@ export default function Bookings() {
     <DashboardLayout>
       <div className="max-w-4xl space-y-6">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-black">My Bookings</h2>
+          <h2 className="text-2xl sm:text-3xl font-black">Mine bookinger</h2>
           <p className="text-muted-foreground mt-1">
-            Track your jobs and manage bookings
+            Følg dine opgaver og administrer bookinger
           </p>
         </div>
 
@@ -62,17 +62,17 @@ export default function Bookings() {
             <CardContent className="py-12 text-center">
               <CalendarCheck className="size-10 text-muted-foreground mx-auto mb-4" />
               <p className="text-lg font-bold text-muted-foreground">
-                No bookings yet
+                Ingen bookinger endnu
               </p>
               <p className="text-sm text-muted-foreground mt-2 mb-4">
-                Browse jobs to start helping your neighbors or post a job to
-                find help.
+                Find opgaver for at begynde at hjælpe dine naboer, eller opret en
+                opgave for at finde hjælp.
               </p>
               <Button
                 onClick={() => navigate("/jobs")}
                 className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)]"
               >
-                Browse Jobs
+                Find opgaver
                 <ArrowRight className="size-4" />
               </Button>
             </CardContent>
@@ -84,33 +84,33 @@ export default function Bookings() {
                 value="active"
                 className="rounded-none border-r-2 border-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4 py-2"
               >
-                Active ({active.length})
+                Aktive ({active.length})
               </TabsTrigger>
               <TabsTrigger
                 value="completed"
                 className="rounded-none border-r-2 border-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4 py-2"
               >
-                Completed ({completed.length})
+                Fuldførte ({completed.length})
               </TabsTrigger>
               <TabsTrigger
                 value="cancelled"
                 className="rounded-none data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4 py-2"
               >
-                Cancelled ({cancelled.length})
+                Annullerede ({cancelled.length})
               </TabsTrigger>
             </TabsList>
 
             {[
-              { value: "active", items: active, empty: "No active bookings" },
+              { value: "active", items: active, empty: "Ingen aktive bookinger" },
               {
                 value: "completed",
                 items: completed,
-                empty: "No completed bookings",
+                empty: "Ingen fuldførte bookinger",
               },
               {
                 value: "cancelled",
                 items: cancelled,
-                empty: "No cancelled bookings",
+                empty: "Ingen annullerede bookinger",
               },
             ].map((tab) => (
               <TabsContent key={tab.value} value={tab.value} className="mt-4">
@@ -140,12 +140,12 @@ export default function Bookings() {
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-1">
                                   <h3 className="font-bold truncate">
-                                    {booking.job?.title || "Job"}
+                                    {booking.job?.title || "Opgave"}
                                   </h3>
                                   <Badge
                                     className={`rounded-none border border-foreground text-xs ${STATUS_COLORS[booking.status] || ""}`}
                                   >
-                                    {booking.status.replace("_", " ")}
+                                    {STATUS_LABELS[booking.status] || booking.status}
                                   </Badge>
                                 </div>
 

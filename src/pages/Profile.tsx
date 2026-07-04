@@ -49,7 +49,7 @@ export default function Profile() {
   const [isVerifying, setIsVerifying] = useState(false);
 
   // Availability state for helpers
-  const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const daysOfWeek = ["Søn", "Man", "Tir", "Ons", "Tor", "Fre", "Lør"];
   const [availEntries, setAvailEntries] = useState<{ dayOfWeek: number; startTime: string; endTime: string }[]>([]);
   const [availInitialized, setAvailInitialized] = useState(false);
   const [isSavingAvail, setIsSavingAvail] = useState(false);
@@ -87,9 +87,9 @@ export default function Profile() {
         await setRole({ role: role as any });
       }
 
-      toast.success("Profile updated!");
+      toast.success("Profil opdateret!");
     } catch (e: any) {
-      toast.error(e.message || "Failed to update profile");
+      toast.error(e.message || "Kunne ikke opdatere profil");
     } finally {
       setIsSaving(false);
     }
@@ -99,9 +99,9 @@ export default function Profile() {
     setIsVerifying(true);
     try {
       await requestVerification();
-      toast.success("Verification requested!");
+      toast.success("Verifikation anmodet!");
     } catch (e: any) {
-      toast.error(e.message || "Failed to request verification");
+      toast.error(e.message || "Kunne ikke anmode om verifikation");
     } finally {
       setIsVerifying(false);
     }
@@ -111,9 +111,9 @@ export default function Profile() {
     setIsSavingAvail(true);
     try {
       await setAvailability({ entries: availEntries });
-      toast.success("Availability saved!");
+      toast.success("Tilgængelighed gemt!");
     } catch (e: any) {
-      toast.error(e.message || "Failed to save availability");
+      toast.error(e.message || "Kunne ikke gemme tilgængelighed");
     } finally {
       setIsSavingAvail(false);
     }
@@ -148,9 +148,9 @@ export default function Profile() {
     <DashboardLayout>
       <div className="max-w-2xl space-y-6">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-black">Profile</h2>
+          <h2 className="text-2xl sm:text-3xl font-black">Profil</h2>
           <p className="text-muted-foreground mt-1">
-            Manage your account and settings
+            Administrer din konto og indstillinger
           </p>
         </div>
 
@@ -166,28 +166,28 @@ export default function Profile() {
                 </Avatar>
                 <div>
                   <p className="text-xl font-black">
-                    {user?.name || "Set your name"}
+                    {user?.name || "Angiv dit navn"}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {user?.email || "No email set"}
+                    {user?.email || "Ingen e-mail angivet"}
                   </p>
                   <div className="flex items-center gap-2 mt-2">
                     <Badge className="rounded-none border border-foreground">
-                      {user?.role || "No role"}
+                      {user?.role === "customer" ? "Kunde" : user?.role === "helper" ? "Hjælper" : user?.role || "Ingen rolle"}
                     </Badge>
                     {user?.isVerified ? (
                       <Badge className="rounded-none border border-foreground bg-green-100 text-green-800">
                         <CheckCircle className="size-3" />
-                        Verified
+                        Verificeret
                       </Badge>
                     ) : user?.verificationStatus === "pending" ? (
                       <Badge className="rounded-none border border-foreground bg-amber-100 text-amber-800">
                         <Clock className="size-3" />
-                        Pending
+                        Afventer
                       </Badge>
                     ) : (
                       <Badge className="rounded-none border border-foreground bg-muted text-muted-foreground">
-                        Unverified
+                        Ikke verificeret
                       </Badge>
                     )}
                   </div>
@@ -200,19 +200,19 @@ export default function Profile() {
           <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0px_0px_var(--color-foreground)]">
             <CardHeader>
               <CardTitle className="text-lg font-black">
-                Edit Profile
+                Rediger profil
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-5">
               {/* Name */}
               <div>
                 <label className="text-sm font-bold block mb-1">
-                  Full Name
+                  Fulde navn
                 </label>
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Your name"
+                  placeholder="Dit navn"
                   className="rounded-none border-2 border-foreground"
                 />
               </div>
@@ -220,18 +220,18 @@ export default function Profile() {
               {/* Role */}
               <div>
                 <label className="text-sm font-bold block mb-1">
-                  Role
+                  Rolle
                 </label>
                 <Select value={role} onValueChange={setRoleState}>
                   <SelectTrigger className="w-full rounded-none border-2 border-foreground">
-                    <SelectValue placeholder="Choose your role" />
+                    <SelectValue placeholder="Vælg din rolle" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="customer">
-                      Customer — I need help with tasks
+                      Kunde — Jeg har brug for hjælp til opgaver
                     </SelectItem>
                     <SelectItem value="helper">
-                      Helper — I want to do tasks for neighbors
+                      Hjælper — Jeg vil udføre opgaver for naboer
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -239,7 +239,7 @@ export default function Profile() {
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-bold block mb-1">Age</label>
+                  <label className="text-sm font-bold block mb-1">Alder</label>
                   <Input
                     type="number"
                     value={age}
@@ -251,7 +251,7 @@ export default function Profile() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-bold block mb-1">Phone</label>
+                  <label className="text-sm font-bold block mb-1">Telefon</label>
                   <Input
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
@@ -264,7 +264,7 @@ export default function Profile() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-bold block mb-1">
-                    Address
+                    Adresse
                   </label>
                   <Input
                     value={address}
@@ -274,11 +274,11 @@ export default function Profile() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-bold block mb-1">City</label>
+                  <label className="text-sm font-bold block mb-1">By</label>
                   <Input
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    placeholder="Copenhagen"
+                    placeholder="København"
                     className="rounded-none border-2 border-foreground"
                   />
                 </div>
@@ -289,7 +289,7 @@ export default function Profile() {
                 <Textarea
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
-                  placeholder="Tell neighbors a bit about yourself..."
+                  placeholder="Fortæl naboerne lidt om dig selv..."
                   className="rounded-none border-2 border-foreground"
                   rows={3}
                 />
@@ -301,7 +301,7 @@ export default function Profile() {
                 className="w-full rounded-none border-2 border-foreground shadow-[4px_4px_0px_0px_var(--color-foreground)] hover:shadow-[2px_2px_0px_0px_var(--color-foreground)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
               >
                 <Save className="size-4" />
-                {isSaving ? "Saving..." : "Save Profile"}
+                {isSaving ? "Gemmer..." : "Gem profil"}
               </Button>
             </CardContent>
           </Card>
@@ -312,13 +312,13 @@ export default function Profile() {
               <CardHeader>
                 <CardTitle className="text-lg font-black flex items-center gap-2">
                   <Shield className="size-5" />
-                  Get Verified
+                  Bliv verificeret
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <p className="text-sm text-muted-foreground">
-                  Verification builds trust with neighbors and unlocks all
-                  features. It's required for helpers to book jobs.
+                  Verifikation skaber tillid blandt naboer og låser op for alle
+                  funktioner. Det er påkrævet for hjælpere for at booke opgaver.
                 </p>
                 <Button
                   onClick={handleRequestVerification}
@@ -328,8 +328,8 @@ export default function Profile() {
                 >
                   <Shield className="size-4" />
                   {isVerifying
-                    ? "Requesting..."
-                    : "Request Verification"}
+                    ? "Anmoder..."
+                    : "Anmod om verifikation"}
                 </Button>
               </CardContent>
             </Card>
@@ -340,7 +340,7 @@ export default function Profile() {
             user?.totalReviews !== undefined) && (
             <Card className="rounded-none border-2 border-foreground">
               <CardHeader>
-                <CardTitle className="text-lg font-black">Stats</CardTitle>
+                <CardTitle className="text-lg font-black">Statistik</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-3 gap-4">
@@ -350,7 +350,7 @@ export default function Profile() {
                       {user.averageRating?.toFixed(1) || "—"}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Rating
+                      Bedømmelse
                     </p>
                   </div>
                   <div className="text-center">
@@ -358,7 +358,7 @@ export default function Profile() {
                       {user.totalReviews || 0}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Reviews
+                      Anmeldelser
                     </p>
                   </div>
                   <div className="text-center">
@@ -366,7 +366,7 @@ export default function Profile() {
                       {user.completedJobs || 0}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Jobs Done
+                      Udførte opgaver
                     </p>
                   </div>
                 </div>
@@ -380,12 +380,12 @@ export default function Profile() {
               <CardHeader>
                 <CardTitle className="text-lg font-black flex items-center gap-2">
                   <Calendar className="size-5" />
-                  Weekly Availability
+                  Ugentlig tilgængelighed
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <p className="text-sm text-muted-foreground">
-                  Select the days and times you're available to help neighbors.
+                  Vælg de dage og tidspunkter, du er tilgængelig for at hjælpe naboer.
                 </p>
                 {daysOfWeek.map((day, i) => {
                   const entry = availEntries.find((e) => e.dayOfWeek === i);
@@ -420,7 +420,7 @@ export default function Profile() {
                         </div>
                       ) : (
                         <span className="text-xs text-muted-foreground flex-1">
-                          Not available
+                          Ikke tilgængelig
                         </span>
                       )}
                     </div>
@@ -433,7 +433,7 @@ export default function Profile() {
                   variant="outline"
                 >
                   <Save className="size-4" />
-                  {isSavingAvail ? "Saving..." : "Save Availability"}
+                  {isSavingAvail ? "Gemmer..." : "Gem tilgængelighed"}
                 </Button>
               </CardContent>
             </Card>
@@ -444,11 +444,11 @@ export default function Profile() {
             <Card className="rounded-none border-2 border-foreground border-dashed bg-amber-50">
               <CardContent className="p-4 text-sm">
                 <p className="font-bold text-amber-800 mb-1">
-                  Guest Account
+                  Gæstekonto
                 </p>
                 <p className="text-amber-700">
-                  You're signed in as a guest. Set up your email and profile
-                  to unlock all features and keep your account safe.
+                  Du er logget ind som gæst. Opsæt din e-mail og profil for at
+                  låse op for alle funktioner og holde din konto sikker.
                 </p>
               </CardContent>
             </Card>

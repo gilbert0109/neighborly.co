@@ -1,5 +1,5 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -54,25 +54,25 @@ export default function Dashboard() {
 
   const stats = [
     {
-      label: "Open Jobs",
+      label: "Åbne opgaver",
       value: openJobs.length,
       icon: Briefcase,
       color: "text-blue-600",
     },
     {
-      label: "Active Bookings",
+      label: "Aktive bookinger",
       value: activeBookings.length,
       icon: CalendarCheck,
       color: "text-amber-600",
     },
     {
-      label: "Completed",
+      label: "Fuldførte",
       value: completedBookings.length,
       icon: Star,
       color: "text-green-600",
     },
     {
-      label: "Rating",
+      label: "Bedømmelse",
       value: user?.averageRating ? `${user.averageRating}/5` : "—",
       icon: Star,
       color: "text-purple-600",
@@ -88,12 +88,12 @@ export default function Dashboard() {
           animate={{ opacity: 1, y: 0 }}
         >
           <h2 className="text-2xl sm:text-3xl font-black">
-            Hello{user?.name ? `, ${user.name.split(" ")[0]}` : ""}!
+            Hej{user?.name ? `, ${user.name.split(" ")[0]}` : ""}!
           </h2>
           <p className="text-muted-foreground mt-1">
             {user?.role === "helper"
-              ? "Ready to help your neighbors today?"
-              : "Need something done? Neighbors are ready to help."}
+              ? "Klar til at hjælpe dine naboer i dag?"
+              : "Har du brug for hjælp? Dine naboer står klar."}
           </p>
         </motion.div>
 
@@ -128,7 +128,7 @@ export default function Dashboard() {
             className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)] hover:shadow-[1px_1px_0px_0px_var(--color-foreground)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
             <Briefcase className="size-4" />
-            Browse Jobs
+            Find opgaver
             <ArrowRight className="size-4" />
           </Button>
           {user?.role === "customer" || !user?.role ? (
@@ -138,7 +138,7 @@ export default function Dashboard() {
               className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)] hover:shadow-[1px_1px_0px_0px_var(--color-foreground)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
             >
               <Plus className="size-4" />
-              Post a Job
+              Opret opgave
             </Button>
           ) : null}
           <Button
@@ -147,7 +147,7 @@ export default function Dashboard() {
             className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)] hover:shadow-[1px_1px_0px_0px_var(--color-foreground)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
           >
             <CalendarCheck className="size-4" />
-            My Bookings
+            Mine bookinger
           </Button>
         </div>
 
@@ -156,7 +156,7 @@ export default function Dashboard() {
           <div>
             <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
               <Clock className="size-5" />
-              Active Bookings
+              Aktive bookinger
             </h3>
             <div className="space-y-3">
               {activeBookings.slice(0, 3).map((booking: any) => (
@@ -167,7 +167,7 @@ export default function Dashboard() {
                 >
                   <CardContent className="p-4 flex items-center justify-between">
                     <div>
-                      <p className="font-bold">{booking.job?.title || "Job"}</p>
+                      <p className="font-bold">{booking.job?.title || "Opgave"}</p>
                       <p className="text-sm text-muted-foreground">
                         {booking.job?.description?.slice(0, 80)}
                         {(booking.job?.description?.length || 0) > 80
@@ -179,7 +179,7 @@ export default function Dashboard() {
                       variant="secondary"
                       className="rounded-none border border-foreground"
                     >
-                      {booking.status.replace("_", " ")}
+                      {STATUS_LABELS[booking.status] || booking.status.replace("_", " ")}
                     </Badge>
                   </CardContent>
                 </Card>
@@ -191,7 +191,7 @@ export default function Dashboard() {
                 onClick={() => navigate("/bookings")}
                 className="mt-2"
               >
-                View all {activeBookings.length} bookings
+                Se alle {activeBookings.length} bookinger
                 <ArrowRight className="size-3" />
               </Button>
             )}
@@ -201,7 +201,7 @@ export default function Dashboard() {
         {/* Recent jobs */}
         {openJobs.length > 0 && (
           <div>
-            <h3 className="text-lg font-bold mb-4">Your Open Jobs</h3>
+            <h3 className="text-lg font-bold mb-4">Dine åbne opgaver</h3>
             <div className="grid sm:grid-cols-2 gap-4">
               {openJobs.slice(0, 4).map((job: any) => (
                 <Card
@@ -241,19 +241,19 @@ export default function Dashboard() {
             <Card className="rounded-none border-2 border-foreground border-dashed bg-muted/50">
               <CardContent className="py-12 text-center">
                 <p className="text-lg font-bold text-muted-foreground mb-2">
-                  Welcome to Neighborly!
+                  Velkommen til Neighborly!
                 </p>
                 <p className="text-sm text-muted-foreground mb-6">
                   {user?.role === "helper"
-                    ? "Browse available jobs in your neighborhood to start helping out."
-                    : "Post your first job and find trusted neighbors to help."}
+                    ? "Find ledige opgaver i dit nabolag og begynd at hjælpe til."
+                    : "Opret din første opgave og find betroede naboer til at hjælpe."}
                 </p>
                 <div className="flex gap-3 justify-center">
                   <Button
                     onClick={() => navigate("/jobs")}
                     className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)]"
                   >
-                    Browse Jobs
+                    Find opgaver
                   </Button>
                   {user?.role !== "helper" && (
                     <Button
@@ -261,7 +261,7 @@ export default function Dashboard() {
                       variant="outline"
                       className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)]"
                     >
-                      Post a Job
+                      Opret opgave
                     </Button>
                   )}
                 </div>

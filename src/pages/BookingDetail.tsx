@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
-import { STATUS_COLORS } from "@/lib/constants";
+import { STATUS_COLORS, STATUS_LABELS } from "@/lib/constants";
 
 export default function BookingDetail() {
   const { bookingId } = useParams<{ bookingId: string }>();
@@ -76,13 +76,13 @@ export default function BookingDetail() {
       <DashboardLayout>
         <Card className="rounded-none border-2 border-foreground max-w-2xl">
           <CardContent className="py-12 text-center">
-            <p className="text-lg font-bold">Booking not found</p>
+            <p className="text-lg font-bold">Booking ikke fundet</p>
             <Button
               onClick={() => navigate("/bookings")}
               variant="link"
               className="mt-2"
             >
-              Back to bookings
+              Tilbage til bookinger
             </Button>
           </CardContent>
         </Card>
@@ -100,9 +100,9 @@ export default function BookingDetail() {
   ) => {
     try {
       await updateStatus({ bookingId: bookingId as Id<"bookings">, status });
-      toast.success(`Booking ${status.replace("_", " ")}`);
+      toast.success(`Booking ${STATUS_LABELS[status] || status}`);
     } catch (e: any) {
-      toast.error(e.message || "Failed to update status");
+      toast.error(e.message || "Kunne ikke opdatere status");
     }
   };
 
@@ -116,7 +116,7 @@ export default function BookingDetail() {
       });
       setChatInput("");
     } catch (e: any) {
-      toast.error(e.message || "Failed to send message");
+      toast.error(e.message || "Kunne ikke sende besked");
     } finally {
       setIsSending(false);
     }
@@ -124,7 +124,7 @@ export default function BookingDetail() {
 
   const handleReview = async () => {
     if (rating === 0) {
-      toast.error("Please select a rating");
+      toast.error("Vælg en bedømmelse");
       return;
     }
     setIsReviewing(true);
@@ -134,11 +134,11 @@ export default function BookingDetail() {
         rating,
         comment: reviewComment,
       });
-      toast.success("Review submitted!");
+      toast.success("Anmeldelse sendt!");
       setRating(0);
       setReviewComment("");
     } catch (e: any) {
-      toast.error(e.message || "Failed to submit review");
+      toast.error(e.message || "Kunne ikke sende anmeldelse");
     } finally {
       setIsReviewing(false);
     }
@@ -157,7 +157,7 @@ export default function BookingDetail() {
           className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors"
         >
           <ArrowLeft className="size-4" />
-          Back to bookings
+          Tilbage til bookinger
         </button>
 
         {/* Booking info */}
@@ -167,13 +167,13 @@ export default function BookingDetail() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <CardTitle className="text-xl font-black">
-                    {job?.title || "Job"}
+                    {job?.title || "Opgave"}
                   </CardTitle>
                   <div className="flex flex-wrap gap-2 mt-2">
                     <Badge
                       className={`rounded-none border border-foreground ${STATUS_COLORS[bookingData.status] || ""}`}
                     >
-                      {bookingData.status.replace("_", " ")}
+                      {STATUS_LABELS[bookingData.status] || bookingData.status}
                     </Badge>
                     <Badge
                       variant="secondary"
@@ -192,7 +192,7 @@ export default function BookingDetail() {
               <div className="grid sm:grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="font-semibold text-xs text-muted-foreground uppercase mb-1">
-                    Scheduled
+                    Planlagt
                   </p>
                   <p className="flex items-center gap-1">
                     <Clock className="size-3" />
@@ -202,7 +202,7 @@ export default function BookingDetail() {
                 {job?.address && (
                   <div>
                     <p className="font-semibold text-xs text-muted-foreground uppercase mb-1">
-                      Location
+                      Adresse
                     </p>
                     <p className="flex items-center gap-1">
                       <MapPin className="size-3" />
@@ -217,7 +217,7 @@ export default function BookingDetail() {
               <div className="border-t-2 border-foreground/10 pt-4">
                 <p className="text-sm font-bold mb-2 flex items-center gap-2">
                   <User className="size-4" />
-                  {isHelper ? "Customer" : "Helper"}
+                  {isHelper ? "Kunde" : "Hjælper"}
                 </p>
                 <div className="flex items-center gap-3">
                   <Avatar className="size-10 rounded-none border-2 border-foreground">
@@ -232,7 +232,7 @@ export default function BookingDetail() {
                   </Avatar>
                   <div>
                     <p className="font-bold">
-                      {otherPerson?.name || "Anonymous"}
+                      {otherPerson?.name || "Anonym"}
                     </p>
                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
                       <Star className="size-3 fill-accent text-accent" />
@@ -248,7 +248,7 @@ export default function BookingDetail() {
               {/* Notes */}
               {bookingData.customerNotes && (
                 <div className="border-t-2 border-foreground/10 pt-4">
-                  <p className="text-sm font-bold mb-1">Notes</p>
+                  <p className="text-sm font-bold mb-1">Noter</p>
                   <p className="text-sm text-muted-foreground">
                     {bookingData.customerNotes}
                   </p>
@@ -264,7 +264,7 @@ export default function BookingDetail() {
                       className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)] bg-green-600 hover:bg-green-700"
                     >
                       <CheckCircle className="size-4" />
-                      Accept
+                      Accepter
                     </Button>
                     <Button
                       onClick={() => handleStatusUpdate("cancelled")}
@@ -272,7 +272,7 @@ export default function BookingDetail() {
                       className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)] text-red-600"
                     >
                       <XCircle className="size-4" />
-                      Decline
+                      Afvis
                     </Button>
                   </>
                 )}
@@ -281,7 +281,7 @@ export default function BookingDetail() {
                     onClick={() => handleStatusUpdate("in_progress")}
                     className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)]"
                   >
-                    Start Job
+                    Start opgave
                   </Button>
                 )}
                 {(isHelper || isCustomer) &&
@@ -291,7 +291,7 @@ export default function BookingDetail() {
                       className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)] bg-green-600 hover:bg-green-700"
                     >
                       <CheckCircle className="size-4" />
-                      Mark Complete
+                      Markér som fuldført
                     </Button>
                   )}
                 {(isHelper || isCustomer) &&
@@ -302,7 +302,7 @@ export default function BookingDetail() {
                       className="rounded-none border-2 border-foreground"
                     >
                       <XCircle className="size-4" />
-                      Cancel
+                      Annuller
                     </Button>
                   )}
               </div>
@@ -320,7 +320,7 @@ export default function BookingDetail() {
             <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0px_0px_var(--color-foreground)]">
               <CardHeader>
                 <CardTitle className="text-lg font-black">
-                  Leave a Review
+                  Skriv en anmeldelse
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -344,7 +344,7 @@ export default function BookingDetail() {
                 <Textarea
                   value={reviewComment}
                   onChange={(e) => setReviewComment(e.target.value)}
-                  placeholder="How was your experience?"
+                  placeholder="Hvordan var din oplevelse?"
                   className="rounded-none border-2 border-foreground"
                   rows={3}
                 />
@@ -354,7 +354,7 @@ export default function BookingDetail() {
                   className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)]"
                 >
                   <Star className="size-4" />
-                  {isReviewing ? "Submitting..." : "Submit Review"}
+                  {isReviewing ? "Sender..." : "Send anmeldelse"}
                 </Button>
               </CardContent>
             </Card>
@@ -365,7 +365,7 @@ export default function BookingDetail() {
           <Card className="rounded-none border-2 border-foreground bg-accent/30">
             <CardContent className="p-4 text-center text-sm font-medium">
               <CheckCircle className="size-4 inline mr-1 text-green-600" />
-              You've reviewed this booking. Thanks!
+              Du har anmeldt denne booking. Tak!
             </CardContent>
           </Card>
         )}
@@ -380,7 +380,7 @@ export default function BookingDetail() {
             <CardHeader className="pb-3">
               <CardTitle className="text-lg font-black flex items-center gap-2">
                 <MessageSquare className="size-5" />
-                Messages
+                Beskeder
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -388,7 +388,7 @@ export default function BookingDetail() {
               <div className="h-64 overflow-y-auto space-y-3 p-2 border-2 border-foreground/10 bg-muted/30">
                 {messages.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-8">
-                    No messages yet. Say hi!
+                    Ingen beskeder endnu. Sig hej!
                   </p>
                 ) : (
                   messages.map((msg: any) => {
@@ -407,7 +407,7 @@ export default function BookingDetail() {
                         >
                           {msg.isFiltered ? (
                             <p className="text-xs italic">
-                              [Message filtered for safety]
+                              [Besked filtreret af sikkerhedshensyn]
                             </p>
                           ) : (
                             <p className="text-sm whitespace-pre-wrap break-words">
@@ -440,7 +440,7 @@ export default function BookingDetail() {
                         handleSendMessage();
                       }
                     }}
-                    placeholder="Type a message..."
+                    placeholder="Skriv en besked..."
                     className="flex-1 rounded-none border-2 border-foreground"
                     disabled={isSending}
                   />
@@ -455,7 +455,7 @@ export default function BookingDetail() {
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground text-center py-2">
-                  Chat is closed for this booking.
+                  Chatten er lukket for denne booking.
                 </p>
               )}
             </CardContent>

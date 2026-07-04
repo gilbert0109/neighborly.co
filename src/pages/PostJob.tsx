@@ -34,12 +34,12 @@ export default function PostJob() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !description || !category || !price || !address) {
-      toast.error("Please fill in all required fields");
+      toast.error("Udfyld venligst alle påkrævede felter");
       return;
     }
     const priceNum = parseFloat(price);
     if (isNaN(priceNum) || priceNum <= 0) {
-      toast.error("Please enter a valid price");
+      toast.error("Indtast en gyldig pris");
       return;
     }
 
@@ -49,18 +49,18 @@ export default function PostJob() {
         title,
         description,
         category: category as any,
-        price: Math.round(priceNum * 100), // Convert to øre (cents)
+        price: Math.round(priceNum * 100), // Konverter til øre
         address,
         city: city || undefined,
-        location: { lat: 0, lng: 0 }, // Note: real geocoding from address needed in production
+        location: { lat: 0, lng: 0 }, // Bemærk: ægte geokodning fra adresse kræves i produktion
         scheduledDate: scheduledDate
           ? new Date(scheduledDate).getTime()
           : undefined,
       });
-      toast.success("Job posted successfully!");
+      toast.success("Opgave oprettet!");
       navigate("/jobs");
     } catch (e: any) {
-      toast.error(e.message || "Failed to post job");
+      toast.error(e.message || "Kunne ikke oprette opgave");
     } finally {
       setIsSubmitting(false);
     }
@@ -74,17 +74,17 @@ export default function PostJob() {
           className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors"
         >
           <ArrowLeft className="size-4" />
-          Back to jobs
+          Tilbage til opgaver
         </button>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0px_0px_var(--color-foreground)]">
             <CardHeader>
               <CardTitle className="text-2xl font-black">
-                Post a New Job
+                Opret en ny opgave
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Describe what you need done and neighbors will offer to help.
+                Beskriv, hvad du har brug for, så vil naboer tilbyde at hjælpe.
               </p>
             </CardHeader>
             <CardContent>
@@ -92,12 +92,12 @@ export default function PostJob() {
                 {/* Title */}
                 <div>
                   <label className="text-sm font-bold block mb-1">
-                    Job Title <span className="text-destructive">*</span>
+                    Opgavetitel <span className="text-destructive">*</span>
                   </label>
                   <Input
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder='e.g. "Mow my front lawn"'
+                    placeholder='F.eks. "Slå min græsplæne"'
                     className="rounded-none border-2 border-foreground"
                     required
                   />
@@ -106,11 +106,11 @@ export default function PostJob() {
                 {/* Category */}
                 <div>
                   <label className="text-sm font-bold block mb-1">
-                    Category <span className="text-destructive">*</span>
+                    Kategori <span className="text-destructive">*</span>
                   </label>
                   <Select value={category} onValueChange={setCategory}>
                     <SelectTrigger className="w-full rounded-none border-2 border-foreground">
-                      <SelectValue placeholder="Select a category" />
+                      <SelectValue placeholder="Vælg en kategori" />
                     </SelectTrigger>
                     <SelectContent>
                       {JOB_CATEGORIES.map((cat) => (
@@ -125,12 +125,12 @@ export default function PostJob() {
                 {/* Description */}
                 <div>
                   <label className="text-sm font-bold block mb-1">
-                    Description <span className="text-destructive">*</span>
+                    Beskrivelse <span className="text-destructive">*</span>
                   </label>
                   <Textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Describe the job in detail. Include size, duration, any special requirements..."
+                    placeholder="Beskriv opgaven i detaljer. Inkluder størrelse, varighed, særlige krav..."
                     className="rounded-none border-2 border-foreground"
                     rows={4}
                     required
@@ -141,7 +141,7 @@ export default function PostJob() {
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-bold block mb-1">
-                      Price (DKK) <span className="text-destructive">*</span>
+                      Pris (DKK) <span className="text-destructive">*</span>
                     </label>
                     <Input
                       type="number"
@@ -154,12 +154,12 @@ export default function PostJob() {
                       required
                     />
                     <p className="text-xs text-muted-foreground mt-1">
-                      Suggested: 100-500 kr depending on the task
+                      Vejledende: 100-500 kr afhængigt af opgaven
                     </p>
                   </div>
                   <div>
                     <label className="text-sm font-bold block mb-1">
-                      Scheduled Date
+                      Planlagt dato
                     </label>
                     <Input
                       type="date"
@@ -169,7 +169,7 @@ export default function PostJob() {
                       min={new Date().toISOString().split("T")[0]}
                     />
                     <p className="text-xs text-muted-foreground mt-1">
-                      Leave empty for flexible timing
+                      Lad være tom for fleksibel timing
                     </p>
                   </div>
                 </div>
@@ -178,7 +178,7 @@ export default function PostJob() {
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-bold block mb-1">
-                      Address <span className="text-destructive">*</span>
+                      Adresse <span className="text-destructive">*</span>
                     </label>
                     <Input
                       value={address}
@@ -190,12 +190,12 @@ export default function PostJob() {
                   </div>
                   <div>
                     <label className="text-sm font-bold block mb-1">
-                      City
+                      By
                     </label>
                     <Input
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
-                      placeholder="Copenhagen"
+                      placeholder="København"
                       className="rounded-none border-2 border-foreground"
                     />
                   </div>
@@ -208,7 +208,7 @@ export default function PostJob() {
                   className="w-full rounded-none border-2 border-foreground shadow-[4px_4px_0px_0px_var(--color-foreground)] hover:shadow-[2px_2px_0px_0px_var(--color-foreground)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
                 >
                   <Send className="size-4" />
-                  {isSubmitting ? "Posting..." : "Post Job"}
+                  {isSubmitting ? "Opretter..." : "Opret opgave"}
                 </Button>
               </form>
             </CardContent>

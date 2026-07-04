@@ -14,7 +14,7 @@ export const setAvailability = mutation({
   },
   handler: async (ctx, args) => {
     const { userId, user } = await requireUser(ctx);
-    if (user.role !== "helper") throw new Error("Only helpers can set availability");
+    if (user.role !== "helper") throw new Error("Kun hjælpere kan angive tilgængelighed");
 
     // Delete existing availability
     const existing = await ctx.db
@@ -28,7 +28,7 @@ export const setAvailability = mutation({
     // Insert new availability
     for (const entry of args.entries) {
       if (entry.dayOfWeek < 0 || entry.dayOfWeek > 6) {
-        throw new Error("Invalid day of week");
+        throw new Error("Ugyldig ugedag");
       }
       await ctx.db.insert("helperAvailability", {
         helperId: userId,

@@ -12,15 +12,14 @@ export const createBooking = mutation({
   },
   handler: async (ctx, args) => {
     const { userId, user } = await requireUser(ctx);
-    if (user.role !== "helper") throw new Error("Only helpers can book jobs");
-    if (!user.isVerified) throw new Error("Only verified helpers can book jobs");
+    if (user.role !== "helper") throw new Error("Kun hjælpere kan booke opgaver");
     if (user.age !== undefined && user.age < 18 && !user.parentApproved) {
-      throw new Error("Helpers under 18 need parent approval before booking");
+      throw new Error("Hjælpere under 18 skal have forældregodkendelse før booking");
     }
 
     const job = await ctx.db.get(args.jobId);
-    if (!job) throw new Error("Job not found");
-    if (job.status !== "open") throw new Error("Job is not available");
+    if (!job) throw new Error("Opgave ikke fundet");
+    if (job.status !== "open") throw new Error("Opgaven er ikke tilgængelig");
 
     // Check for existing booking
     const existing = await ctx.db
@@ -33,7 +32,7 @@ export const createBooking = mutation({
         ),
       )
       .first();
-    if (existing) throw new Error("Job already has an active booking");
+    if (existing) throw new Error("Opgaven har allerede en aktiv booking");
 
     const now = Date.now();
 
@@ -68,12 +67,12 @@ export const updateBookingStatus = mutation({
   handler: async (ctx, args) => {
     const { userId, user } = await requireUser(ctx);
     const booking = await ctx.db.get(args.bookingId);
-    if (!booking) throw new Error("Booking not found");
+    if (!booking) throw new Error("Booking ikke fundet");
 
     const isCustomer = booking.customerId === userId;
     const isHelper = booking.helperId === userId;
     if (!isCustomer && !isHelper && user.role !== "admin") {
-      throw new Error("Not authorized");
+      throw new Error("Ikke autoriseret");
     }
 
     const now = Date.now();
@@ -81,17 +80,17 @@ export const updateBookingStatus = mutation({
 
     // Customer accepts the booking
     if (args.status === "accepted" && isCustomer) {
-      if (booking.status !== "pending") throw new Error("Can only accept pending bookings");
+      if (booking.status !== "pending") throw new Error("Kan kun acceptere afventende bookinger");
     }
 
     // Helper marks in progress
     if (args.status === "in_progress" && isHelper) {
-      if (booking.status !== "accepted") throw new Error("Can only start accepted bookings");
+      if (booking.status !== "accepted") throw new Error("Kan kun starte accepterede bookinger");
     }
 
     // Either party marks completed
     if (args.status === "completed") {
-      if (booking.status !== "in_progress") throw new Error("Can only complete in-progress bookings");
+      if (booking.status !== "in_progress") throw new Error("Kan kun fuldføre igangværende bookinger");
       // Update job status
       await ctx.db.patch(booking.jobId, { status: "completed", updatedAt: now });
       // Increment completed jobs counter
@@ -148,10 +147,10 @@ export const getBooking = query({
   handler: async (ctx, args) => {
     const { userId } = await requireUser(ctx);
     const booking = await ctx.db.get(args.bookingId);
-    if (!booking) throw new Error("Booking not found");
+    if (!booking) throw new Error("Booking ikke fundet");
     if (booking.helperId !== userId && booking.customerId !== userId) {
       const u = await ctx.db.get(userId);
-      if (!u?.role || u.role !== "admin") throw new Error("Not authorized");
+      if (!u?.role || u.role !== "admin") throw new Error("Ikke autoriseret");
     }
     const job = await ctx.db.get(booking.jobId);
     const helper = await ctx.db.get(booking.helperId);
@@ -168,8 +167,8 @@ export const setPaymentIntent = mutation({
   handler: async (ctx, args) => {
     const { userId } = await requireUser(ctx);
     const booking = await ctx.db.get(args.bookingId);
-    if (!booking) throw new Error("Booking not found");
-    if (booking.customerId !== userId) throw new Error("Not your booking");
+    if (!booking) throw new Error("Booking ikke fundet");
+    if (booking.customerId !== userId) throw new Error("Ikke din booking");
     await ctx.db.patch(args.bookingId, {
       stripePaymentIntentId: args.paymentIntentId,
       paymentStatus: "held",

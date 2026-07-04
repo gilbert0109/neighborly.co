@@ -12,14 +12,14 @@ export const createReview = mutation({
   handler: async (ctx, args) => {
     const { userId, user } = await requireUser(ctx);
     const booking = await ctx.db.get(args.bookingId);
-    if (!booking) throw new Error("Booking not found");
-    if (booking.status !== "completed") throw new Error("Can only review completed bookings");
+    if (!booking) throw new Error("Booking ikke fundet");
+    if (booking.status !== "completed") throw new Error("Kan kun anmelde fuldførte bookinger");
 
     const isCustomer = booking.customerId === userId;
     const isHelper = booking.helperId === userId;
-    if (!isCustomer && !isHelper) throw new Error("Not part of this booking");
+    if (!isCustomer && !isHelper) throw new Error("Ikke en del af denne booking");
 
-    if (args.rating < 1 || args.rating > 5) throw new Error("Rating must be 1-5");
+    if (args.rating < 1 || args.rating > 5) throw new Error("Bedømmelse skal være 1-5");
 
     // Check for duplicate
     const existing = await ctx.db
@@ -27,7 +27,7 @@ export const createReview = mutation({
       .withIndex("by_booking", (q) => q.eq("bookingId", args.bookingId))
       .filter((q) => q.eq(q.field("reviewerId"), userId))
       .first();
-    if (existing) throw new Error("You've already reviewed this booking");
+    if (existing) throw new Error("Du har allerede anmeldt denne booking");
 
     const revieweeId = isCustomer ? booking.helperId : booking.customerId;
     const role = isCustomer ? "customer" : "helper";

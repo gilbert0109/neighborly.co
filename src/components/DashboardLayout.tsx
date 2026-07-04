@@ -16,10 +16,10 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { path: "/jobs/new", label: "Post a Job", icon: PlusCircle },
-  { path: "/jobs", label: "Browse Jobs", icon: Briefcase },
-  { path: "/bookings", label: "My Bookings", icon: CalendarCheck },
-  { path: "/profile", label: "Profile", icon: User },
+  { path: "/jobs/new", label: "Opret opgave", icon: PlusCircle },
+  { path: "/jobs", label: "Find opgaver", icon: Briefcase },
+  { path: "/bookings", label: "Mine bookinger", icon: CalendarCheck },
+  { path: "/profile", label: "Profil", icon: User },
 ];
 
 function matchCurrentPath(pathname: string): string | undefined {
@@ -112,10 +112,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               </Avatar>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold truncate">
-                  {user?.name || "Neighbor"}
+                  {user?.name || "Nabo"}
                 </p>
                 <p className="text-xs text-muted-foreground truncate">
-                  {user?.role || "Loading..."}
+                  {user?.role === "customer" ? "Kunde" : user?.role === "helper" ? "Hjælper" : user?.role || "Indlæser..."}
                 </p>
               </div>
             </div>
@@ -126,7 +126,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               className="w-full rounded-none border-2 border-foreground"
             >
               <LogOut className="size-3" />
-              Sign Out
+              Log ud
             </Button>
           </SidebarFooter>
         </Sidebar>

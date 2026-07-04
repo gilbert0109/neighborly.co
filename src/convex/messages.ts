@@ -40,18 +40,18 @@ export const sendMessage = mutation({
   handler: async (ctx, args) => {
     const { userId } = await requireUser(ctx);
     const booking = await ctx.db.get(args.bookingId);
-    if (!booking) throw new Error("Booking not found");
+    if (!booking) throw new Error("Booking ikke fundet");
 
     if (booking.helperId !== userId && booking.customerId !== userId) {
-      throw new Error("Not part of this booking");
+      throw new Error("Ikke en del af denne booking");
     }
 
     if (booking.status === "cancelled" || booking.status === "completed") {
-      throw new Error("Chat is closed for this booking");
+      throw new Error("Chatten er lukket for denne booking");
     }
 
-    if (args.content.trim().length === 0) throw new Error("Message cannot be empty");
-    if (args.content.length > 2000) throw new Error("Message too long");
+    if (args.content.trim().length === 0) throw new Error("Beskeden må ikke være tom");
+    if (args.content.length > 2000) throw new Error("Beskeden er for lang");
 
     const receiverId =
       booking.customerId === userId ? booking.helperId : booking.customerId;
@@ -75,9 +75,9 @@ export const getMessages = query({
   handler: async (ctx, args) => {
     const { userId } = await requireUser(ctx);
     const booking = await ctx.db.get(args.bookingId);
-    if (!booking) throw new Error("Booking not found");
+    if (!booking) throw new Error("Booking ikke fundet");
     if (booking.helperId !== userId && booking.customerId !== userId) {
-      throw new Error("Not part of this booking");
+      throw new Error("Ikke en del af denne booking");
     }
 
     const messages = await ctx.db

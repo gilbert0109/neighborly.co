@@ -102,11 +102,8 @@ export const createJob = mutation({
   },
   handler: async (ctx, args) => {
     const { userId, user } = await requireUser(ctx);
-    if (user.role !== "customer" && user.role !== "admin") {
-      throw new Error("Only verified customers can post jobs");
-    }
-    if (!user.isVerified) {
-      throw new Error("Only verified customers can post jobs");
+    if (user.role && user.role !== "customer" && user.role !== "admin") {
+      throw new Error("Kun kunder kan oprette jobs. Vælg rollen 'Kunde' i din profil.");
     }
 
     const now = Date.now();
