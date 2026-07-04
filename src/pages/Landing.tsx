@@ -1,4 +1,4 @@
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import { useRef, useState } from "react";
 import {
   Leaf,
@@ -26,6 +26,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
 import { useAuth } from "@/hooks/use-auth";
+import logo from "@/assets/logo.svg";
 
 const jobCategories = [
   { icon: Leaf, label: "Græsslåning", color: "text-green-600" },
@@ -91,6 +92,7 @@ export default function Landing() {
   const { isAuthenticated } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
+  const reduceMotion = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: heroRef,
     offset: ["start start", "end start"],
@@ -216,71 +218,41 @@ export default function Landing() {
 
         <div className="max-w-6xl mx-auto px-4 pt-24 pb-20 md:pt-32 md:pb-28">
           <div className="max-w-3xl mx-auto text-center">
-            {/* ─── Spinning Neighborly logo centerpiece ─── */}
+            {/* ─── Spinning Neighborly logo centerpiece ───
+                The emblem is the brand — there's no separate static wordmark
+                below it (the existing marketing h1 below conveys the value
+                prop, and the header already carries the wordmark in the
+                corner). `prefers-reduced-motion` users get a soft pulse
+                instead of full rotation. */}
             <motion.div
               initial={{ opacity: 0, scale: 0.7 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.7, type: "spring", bounce: 0.3 }}
-              className="mb-10 flex flex-col items-center"
+              className="mb-10 flex justify-center"
             >
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 14, repeat: Infinity, ease: "linear" }}
-                className="relative"
+              <div
+                className="relative border-4 border-foreground rounded-full overflow-hidden"
+                style={{ boxShadow: "10px 10px 0px 0px var(--color-foreground)" }}
               >
-                {/* Gold N mark */}
-                <div
-                  className="size-48 sm:size-60 flex items-center justify-center border-4 border-foreground relative overflow-hidden"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, #FFE082 0%, #FFC107 30%, #FFA000 60%, #B7791F 100%)",
-                    boxShadow: "10px 10px 0px 0px var(--color-foreground)",
-                  }}
-                >
-                  {/* Inner embossed border to mimic the 3D depth */}
-                  <div className="absolute inset-2 border-2 border-foreground/40" />
-                  <div className="absolute inset-3 border border-foreground/20" />
-
-                  {/* The big "N" — Neighborly monogram */}
-                  <span
-                    className="relative font-black text-8xl sm:text-9xl leading-none select-none"
-                    style={{
-                      color: "var(--color-foreground)",
-                      textShadow:
-                        "3px 3px 0 rgba(255,255,255,0.35), -2px -2px 0 rgba(0,0,0,0.35)",
-                      fontFamily: "Georgia, 'Times New Roman', serif",
-                      fontStyle: "italic",
-                    }}
-                  >
-                    N
-                  </span>
-
-                  {/* Corner tag-cloud "neighborly" mark */}
-                  <span
-                    className="absolute -top-3 -right-3 bg-foreground text-yellow-300 font-black text-[10px] sm:text-xs px-2 py-1 tracking-widest border-2 border-background"
-                    style={{
-                      transform: "rotate(8deg)",
-                    }}
-                  >
-                    NEIGHBORLY
-                  </span>
-                </div>
-              </motion.div>
-
-              {/* Wordmark below — doesn't rotate, complements the spinning mark */}
-              <h1 className="mt-6 text-3xl sm:text-4xl font-black tracking-tight">
-                <span
-                  style={{
-                    background:
-                      "linear-gradient(90deg, #B7791F 0%, #FFA000 50%, #B7791F 100%)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
-                  }}
-                >
-                  Neighborly
-                </span>
-              </h1>
+                {reduceMotion ? (
+                  // Accessible fallback — gentle pulse, no rotation.
+                  <motion.img
+                    src={logo}
+                    alt="Neighborly emblem"
+                    animate={{ scale: [1, 1.04, 1] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                    className="size-48 sm:size-60 block"
+                  />
+                ) : (
+                  <motion.img
+                    src={logo}
+                    alt="Neighborly emblem"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 14, repeat: Infinity, ease: "linear" }}
+                    className="size-48 sm:size-60 block"
+                  />
+                )}
+              </div>
             </motion.div>
 
             {/* Badge */}
