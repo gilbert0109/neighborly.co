@@ -52,7 +52,15 @@ export default function Profile() {
   const setRole = useMutation(api.users.setRole);
   const startMitID = useMutation(api.mitid.startMitIDVerification);
   const revokeMitID = useMutation(api.mitid.revokeMitIDVerification);
-  const mitIDStatus = useQuery(api.mitid.getMitIDStatus);
+  // Sandbox mode is detected from the authorize URL returned by
+  // `startMitIDVerification` (sandbox URLs start with /mitid-sandbox,
+  // production URLs are absolute broker URLs). We intentionally do NOT
+  // call a separate `getMitIDStatus` query here — the backend function
+  // may not be deployed yet, and a missing function on /profile would
+  // crash the entire page before the user can use anything else.
+  const [mitIDReturnUrl, setMitIDReturnUrl] = useState<string | null>(
+    null,
+  );
   const setAvailability = useMutation(api.availability.setAvailability);
   const availability = useQuery(api.availability.getMyAvailability);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -139,10 +147,15 @@ export default function Profile() {
     setIsStartingMitID(true);
     try {
       const { url } = await startMitID({ origin: window.location.origin });
+      setMitIDReturnUrl(url);
       // Hard navigation — the MitID broker is a separate origin/device.
       window.location.href = url;
     } catch (e: any) {
-      toast.error(e.message || "Kunne ikke starte MitID-flow");
+      toast.error(
+        e?.message?.includes("Could not find public function")
+          ? "MitID-verifikation er ikke tilgængelig i øjeblikket. Prøv igen senere."
+          : e.message || "Kunne ikke starte MitID-flow",
+      );
       setIsStartingMitID(false);
     }
   };
@@ -372,7 +385,7 @@ export default function Profile() {
                   Verificeret med MitID
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent>
                 <div className="flex items-center gap-3 p-3 bg-green-50 border-2 border-green-600">
                   <CheckCircle className="size-5 text-green-700 shrink-0" />
                   <div>
@@ -395,7 +408,7 @@ export default function Profile() {
                     </p>
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground mt-3">
                   Dit MitID er knyttet til denne konto. Det øger tilliden blandt
                   naboer og gør det nemmere at samarbejde i nabolaget.
                 </p>
@@ -403,7 +416,7 @@ export default function Profile() {
                   variant="ghost"
                   onClick={handleRevokeMitID}
                   disabled={isRevokingMitID}
-                  className="text-xs text-muted-foreground h-auto p-0 hover:bg-transparent"
+                  className="text-xs text-muted-foreground h-auto p-0 mt-2 hover:bg-transparent"
                 >
                   {isRevokingMitID ? "Frakobler..." : "Frakobl MitID og verificér igen"}
                 </Button>
@@ -441,7 +454,7 @@ export default function Profile() {
                   )}
                 </Button>
                 <p className="text-xs text-muted-foreground text-center">
-                  {mitIDStatus?.mode === "sandbox"
+                  {mitIDReturnUrl && mitIDReturnUrl.startsWith("/mitid-sandbox")
                     ? "Du videresendes til Neighborlys MitID-testmiljø (sandbox)."
                     : "Du videresendes til NemLog-in / din MitID-broker."}
                 </p>
