@@ -1,35 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 360" role="img" aria-label="Neighborly emblem">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="Neighborly emblem">
   <title>Neighborly</title>
-
   <defs>
-    <!-- Clip the emblem to a circular viewport so any decorative gold
-         flourish stays inside the spinning container. -->
-    <clipPath id="discClip">
-      <circle cx="180" cy="180" r="180"/>
-    </clipPath>
-
-    <!-- Brass-like gradient that emulates the metallic gold look. -->
-    <linearGradient id="goldFill" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%"  stop-color="#FFF1B8"/>
+    <!-- Brass-tone radial gradient: shine on the upper-left, deep amber
+         toward the lower-right edge. -->
+    <radialGradient id="brass" cx="32%" cy="28%" r="85%">
+      <stop offset="0%"  stop-color="#FFE89C"/>
       <stop offset="25%" stop-color="#F2C94C"/>
       <stop offset="55%" stop-color="#C99326"/>
-      <stop offset="80%" stop-color="#8C5E12"/>
-      <stop offset="100%" stop-color="#5A3A07"/>
-    </linearGradient>
+      <stop offset="85%" stop-color="#7A4F11"/>
+      <stop offset="100%" stop-color="#3F2706"/>
+    </radialGradient>
 
-    <!-- Inner highlight gradient for the embossed "shine" effect on the
-         top-left of the monogram. -->
-    <linearGradient id="goldHi" x1="0.1" y1="0.1" x2="0.6" y2="0.6">
+    <!-- Specular highlight (off-center upper-left) -->
+    <radialGradient id="shine" cx="22%" cy="18%" r="42%">
       <stop offset="0%"  stop-color="#FFFFFF" stop-opacity="0.85"/>
-      <stop offset="55%" stop-color="#FFFFFF" stop-opacity="0.15"/>
+      <stop offset="65%" stop-color="#FFFFFF" stop-opacity="0.10"/>
       <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Monogram: subtle top→bottom falloff on the dark fill so the letter
+         reads embossed rather than as a flat sticker. -->
+    <linearGradient id="letterFill" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%"  stop-color="#3A3A3A"/>
+      <stop offset="55%" stop-color="#161616"/>
+      <stop offset="100%" stop-color="#050505"/>
     </linearGradient>
 
-    <!-- Soft drop shadow so the dark N reads lifted from the gold plate. -->
-    <filter id="liftShadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
-      <feOffset dx="2" dy="4" result="off"/>
+    <!-- Edge highlight along the letter strokes -->
+    <linearGradient id="letterRim" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%"  stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.10"/>
+    </linearGradient>
+
+    <!-- Soft emboss shadow under the monogram -->
+    <filter id="monogramShadow" x="-25%" y="-15%" width="150%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3.5"/>
+      <feOffset dx="3" dy="6" result="off"/>
       <feComponentTransfer in="off" result="shadow">
         <feFuncA type="linear" slope="0.55"/>
       </feComponentTransfer>
@@ -38,64 +45,83 @@
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
+
+    <!-- Wave-decoration path (reused on the upper-right of the emblem).
+         Mirrors the curl/braid flourish from the reference image. -->
+    <symbol id="braid" overflow="visible">
+      <path d="M 0 0
+               C 14 -8 28 -2 38 -14
+               C 48 -26 36 -38 22 -34
+               C 8 -30 0 -22 -8 -34
+               C -16 -46 -28 -40 -32 -28
+               C -36 -16 -22 -8 -6 -10"
+        fill="none"
+        stroke="url(#letterFill)"
+        stroke-width="5"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+      <path d="M 2 -4
+               C 14 -12 26 -6 34 -16"
+        fill="none" stroke="url(#letterFill)" stroke-width="3" stroke-linecap="round"/>
+    </symbol>
   </defs>
 
-  <!-- Gold-plated circular plate -->
-  <g clip-path="url(#discClip)">
-    <rect x="0" y="0" width="360" height="360" fill="url(#goldFill)"/>
+  <!-- Round metal plate -->
+  <circle cx="200" cy="200" r="200" fill="url(#brass)"/>
 
-    <!-- Inner embossed ring (lighter rim) -->
-    <circle cx="180" cy="180" r="172" fill="none" stroke="#FFE082" stroke-width="3" opacity="0.55"/>
+  <!-- Embossed rims -->
+  <circle cx="200" cy="200" r="194" fill="none" stroke="#FFE082" stroke-width="2.5" opacity="0.55"/>
+  <circle cx="200" cy="200" r="188" fill="none" stroke="#3F2706" stroke-width="2" opacity="0.45"/>
 
-    <!-- Specular highlight sweeping top-left to bottom-right -->
-    <rect x="0" y="0" width="360" height="360" fill="url(#goldHi)"/>
+  <!-- Specular highlight (upper-left hot-spot) -->
+  <circle cx="200" cy="200" r="200" fill="url(#shine)"/>
 
-    <!-- The big stylised "N" monogram — italic serif, drawn as a path so
-         the curves get a metallic edge. -->
-    <g filter="url(#liftShadow)" transform="translate(180 180)">
-      <path
-        d="M -70 -90
-           C -78 -90 -84 -82 -82 -72
-           L -68 70
-           C -66 84 -58 92 -42 92
-           C -28 92 -22 84 -22 72
-           L -22 -34
-           L 22 -34
-           L 22 70
-           C 22 84 28 92 44 92
-           C 60 92 66 84 68 70
-           L 82 -72
-           C 84 -82 78 -90 70 -90
-           L -70 -90 Z"
-        fill="#1F1F1F"
-        stroke="#FFFFFF"
-        stroke-width="2"
-        stroke-linejoin="round"
-        transform="rotate(0)"
-        opacity="0.95"
-      />
+  <!-- Subtle radial flares for metallic depth -->
+  <g opacity="0.35">
+    <ellipse cx="120" cy="120" rx="80" ry="22" fill="#FFFFFF" transform="rotate(-22 120 120)"/>
+    <ellipse cx="290" cy="285" rx="60" ry="14" fill="#3F2706" transform="rotate(-18 290 285)"/>
+  </g>    <!-- The big stylised italic "N" monogram — fills the plate vertically.
+         Uses a generic bold italic Georgia that ships with every browser, so
+         cross-platform rendering stays recognisable. -->
+  <g filter="url(#monogramShadow)">
+    <text
+      x="200"
+      y="200"
+      text-anchor="middle"
+      dominant-baseline="central"
+      font-family="Georgia, 'Times New Roman', 'Liberation Serif', serif"
+      font-style="italic"
+      font-weight="900"
+      font-size="340"
+      fill="url(#letterFill)"
+      letter-spacing="-0.06em"
+    >N</text>
+    <!-- Top-edge rim light to simulate raised-metal edge -->
+    <text
+      x="200"
+      y="200"
+      text-anchor="middle"
+      dominant-baseline="central"
+      font-family="Georgia, 'Times New Roman', 'Liberation Serif', serif"
+      font-style="italic"
+      font-weight="900"
+      font-size="340"
+      fill="none"
+      stroke="url(#letterRim)"
+      stroke-width="1.5"
+      letter-spacing="-0.06em"
+    >N</text>
+  </g>
 
-      <!-- Italic slant + flourish on the top serif to add the "F-curves"
-         feel from the reference design. -->
-      <g transform="skewX(-10)">
-        <path
-          d="M -82 -90 L -68 -90 C -50 -100 -28 -100 -8 -90"
-          fill="none"
-          stroke="#1F1F1F"
-          stroke-width="10"
-          stroke-linecap="round"
-        />
-        <path
-          d="M -22 -90 L -8 -90 C 14 -100 38 -100 60 -90 L 68 -90"
-          fill="none"
-          stroke="#1F1F1F"
-          stroke-width="10"
-          stroke-linecap="round"
-        />
-      </g>
-    </g>
+  <!-- Curl/braid decoration in the upper-right of the plate -->
+  <use href="#braid" x="280" y="32" width="80" height="64" opacity="0.85"/>
+  <!-- Mirrored copy in the lower-left: same pre-rotation coords as the
+       primary braid, then rotated 180° around the disc centre (200,200)
+       so it lands at (120,368)–(40,304) — the lower-left quadrant. -->
+  <g transform="rotate(180 200 200)">
+    <use href="#braid" x="280" y="32" width="80" height="64" opacity="0.75"/>
   </g>
 
   <!-- Outer thin frame to clip any sub-pixel outline artifacts -->
-  <circle cx="180" cy="180" r="178" fill="none" stroke="#3F2706" stroke-width="2" opacity="0.35"/>
+  <circle cx="200" cy="200" r="198" fill="none" stroke="#3F2706" stroke-width="2" opacity="0.3"/>
 </svg>
