@@ -5,84 +5,83 @@ import {
   Dog,
   Snowflake,
   Car,
-  ShoppingCart,
-  Sofa,
-  Bike,
+  Wind,
+  Wrench,
+  Flower,
   ClipboardList,
   Search,
   CheckCircle,
   Shield,
-  Star,
-  Clock,
   MessageCircle,
   ArrowRight,
   Menu,
   X,
-  Sparkles,
-  Wrench,
-  Flower,
-  Wind,
+  HeartHandshake,
+  MapPin,
+  Lock,
+  Sun,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
 import { useAuth } from "@/hooks/use-auth";
 
 const jobCategories = [
-  { icon: Leaf, label: "Græsslåning", color: "text-green-600" },
-  { icon: Flower, label: "Havearbejde", color: "text-emerald-600" },
-  { icon: Dog, label: "Luftning af hund", color: "text-amber-600" },
-  { icon: Snowflake, label: "Snerydning", color: "text-blue-500" },
-  { icon: Car, label: "Bilvask", color: "text-sky-500" },
-  { icon: Wind, label: "Løvrivning", color: "text-orange-600" },
-  { icon: ShoppingCart, label: "Indkøbslevering", color: "text-rose-500" },
-  { icon: Sofa, label: "Møbelflytning", color: "text-purple-600" },
-  { icon: Bike, label: "Cykelreparation", color: "text-cyan-600" },
+  { icon: Leaf, label: "Græsslåning", color: "text-[var(--trust)]" },
+  { icon: Flower, label: "Havehjælp", color: "text-[var(--trust)]" },
+  { icon: Dog, label: "Hundeluftning", color: "text-[var(--safety)]" },
+  { icon: Snowflake, label: "Snerydning", color: "text-[var(--safety)]" },
+  { icon: Car, label: "Bilvask", color: "text-[var(--trust)]" },
+  { icon: Wind, label: "Løvrivning", color: "text-[var(--warning)]" },
 ];
 
-const features = [
+const trustFeatures = [
   {
     icon: Shield,
-    title: "Verificerede naboer",
-    description:
-      "Alle hjælpere er verificeret gennem vores fællesskabs-baserede tillidssystem. Ved, hvem der kommer til din dør.",
+    title: "MitID-verificerede kunder",
+    description: "Alle kunder er verificeret via MitID — Danmarks officielle digitale ID.",
   },
   {
-    icon: Star,
-    title: "Bedømt & anmeldt",
-    description:
-      "Læs ærlige anmeldelser fra dine faktiske naboer. Opbyg tillid gennem fælles oplevelser.",
+    icon: HeartHandshake,
+    title: "Forældregodkendte unge",
+    description: "Hjælpere under 18 har aktiv forældregodkendelse med tydelige rammer.",
   },
   {
-    icon: Clock,
-    title: "Hurtigt & fleksibelt",
-    description:
-      "Book hjælp til i dag eller planlæg frem i tiden. Find nogen, der er ledig, når du har brug for dem.",
+    icon: MapPin,
+    title: "Kun sikre udendørs opgaver",
+    description: "Ingen indendørs arbejde, ingen transport, ingen private hjem.",
+  },
+  {
+    icon: Lock,
+    title: "Betaling i appen",
+    description: "Sikker betaling via appen — ingen kontanter, ingen MobilePay uden for platformen.",
+  },
+  {
+    icon: Sun,
+    title: "Trygge arbejdstider",
+    description: "Unge arbejder kun mellem kl. 08:00 og 18:00 i dagslys.",
   },
   {
     icon: MessageCircle,
-    title: "Direkte beskeder",
-    description:
-      "Chat med din hjælper, før de ankommer. Diskuter detaljer, del billeder, hold kontakten.",
+    title: "Sikker beskedfunktion",
+    description: "Al kommunikation bliver i appen. Ingen telefonnumre, ingen kontanter, ingen eksterne beskeder.",
   },
 ];
 
 const steps = [
   {
     icon: ClipboardList,
-    title: "Opret en opgave",
-    description: "Beskriv, hvad du har brug for, sæt din pris, og vælg et tidspunkt.",
+    title: "Beskriv opgaven",
+    description: "Fortæl hvad du har brug for — græsslåning, hundeluftning eller en anden udendørs opgave.",
   },
   {
     icon: Search,
-    title: "Bliv matchet",
-    description:
-      "Betroede hjælpere i dit nabolag ser din opgave og tilbyder at hjælpe.",
+    title: "Find en hjælper",
+    description: "Verificerede lokale unge byder på opgaven. Se deres profil, bedømmelser og forældregodkendelse.",
   },
   {
     icon: CheckCircle,
-    title: "Opgaven løst",
-    description:
-      "Din nabo møder op, får det gjort, og I bedømmer begge oplevelsen.",
+    title: "Få det løst — sikkert",
+    description: "Opgaven udføres, betaling sker i appen, og I kan begge skrive en anmeldelse.",
   },
 ];
 
@@ -96,62 +95,59 @@ export default function Landing() {
     offset: ["start start", "end start"],
   });
   const heroOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
-  const heroScale = useTransform(scrollYProgress, [0, 0.6], [1, 0.95]);
+  const heroScale = useTransform(scrollYProgress, [0, 0.6], [1, 0.98]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* ─── Navigation ─── */}
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b-2 border-foreground">
+      <header className="sticky top-0 z-50 bg-background/85 backdrop-blur-md border-b border-border">
         <nav className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <button
             onClick={() => navigate("/")}
-            className="flex items-center gap-2 font-bold text-xl tracking-tight hover:opacity-80 transition-opacity"
-          >                <div className="size-9 bg-primary flex items-center justify-center rounded-none overflow-hidden">
-              <Wrench className="size-5 text-primary-foreground" />
+            className="flex items-center gap-2 font-bold text-lg tracking-tight hover:opacity-80 transition-all"
+          >
+            <div className="size-9 bg-[var(--trust)] flex items-center justify-center rounded-lg">
+              <Wrench className="size-5 text-white" />
             </div>
-            Neighborly
+            <span>Neighborly</span>
           </button>
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-6 text-sm font-medium">
             <a
               href="#how-it-works"
-              className="hover:text-primary transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
               Sådan virker det
             </a>
             <a
               href="#categories"
-              className="hover:text-primary transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
               Ydelser
             </a>
             <a
-              href="#features"
-              className="hover:text-primary transition-colors"
+              href="#safety"
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
-              Hvorfor Neighborly
+              Sikkerhed
             </a>
             <Button
-              onClick={() => navigate("/auth")}
-              className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)] hover:shadow-[1px_1px_0px_0px_var(--color-foreground)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+              onClick={() => navigate(isAuthenticated ? "/dashboard" : "/auth")}
+              className="rounded-lg border border-border bg-[var(--trust)] text-white hover:bg-[var(--trust)]/90 shadow-sm transition-all px-5 h-10"
             >
               {isAuthenticated ? "Dashboard" : "Log ind"}
-              <ArrowRight className="size-4" />
+              <ArrowRight className="size-4 ml-1" />
             </Button>
           </div>
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden p-2"
+            className="md:hidden p-2 rounded-lg hover:bg-muted transition-colors"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
           >
-            {mobileMenuOpen ? (
-              <X className="size-6" />
-            ) : (
-              <Menu className="size-6" />
-            )}
+            {mobileMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>
         </nav>
 
@@ -160,38 +156,33 @@ export default function Landing() {
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="md:hidden border-t-2 border-foreground bg-background px-4 py-4 flex flex-col gap-3"
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="md:hidden border-t border-border bg-background px-4 py-4 flex flex-col gap-2"
           >
-            <a
-              href="#how-it-works"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-sm font-medium hover:text-primary transition-colors py-2"
-            >
-              Sådan virker det
-            </a>
-            <a
-              href="#categories"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-sm font-medium hover:text-primary transition-colors py-2"
-            >
-              Ydelser
-            </a>
-            <a
-              href="#features"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-sm font-medium hover:text-primary transition-colors py-2"
-            >
-              Hvorfor Neighborly
-            </a>
+            {[
+              { href: "#how-it-works", label: "Sådan virker det" },
+              { href: "#categories", label: "Ydelser" },
+              { href: "#safety", label: "Sikkerhed" },
+            ].map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors py-2 px-3 rounded-lg hover:bg-muted"
+              >
+                {link.label}
+              </a>
+            ))}
             <Button
               onClick={() => {
                 setMobileMenuOpen(false);
                 navigate("/auth");
               }}
-              className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)] w-full mt-2"
+              className="rounded-lg border border-border bg-[var(--trust)] text-white mt-2 w-full"
             >
               {isAuthenticated ? "Dashboard" : "Log ind"}
-              <ArrowRight className="size-4" />
+              <ArrowRight className="size-4 ml-1" />
             </Button>
           </motion.div>
         )}
@@ -203,94 +194,113 @@ export default function Landing() {
         style={{ opacity: heroOpacity, scale: heroScale }}
         className="relative overflow-hidden"
       >
-        {/* Decorative background pattern */}
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--color-foreground)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-foreground)_1px,transparent_1px)] bg-[size:64px_64px] opacity-[0.03]" />
-        </div>
+        {/* Subtle background */}
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background via-muted/30 to-background" />
 
-        <div className="max-w-6xl mx-auto px-4 pt-24 pb-20 md:pt-32 md:pb-28">
+        <div className="max-w-6xl mx-auto px-4 pt-20 pb-16 md:pt-28 md:pb-24">
           <div className="max-w-3xl mx-auto text-center">
-
-
             {/* Badge */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 bg-accent border-2 border-foreground px-4 py-1.5 mb-8"
+              transition={{ duration: 0.4 }}
+              className="inline-flex items-center gap-2 bg-[var(--trust)]/10 text-[var(--trust)] border border-[var(--trust)]/20 rounded-full px-4 py-1.5 mb-8"
             >
-              <Sparkles className="size-4" />
-              <span className="text-sm font-semibold uppercase tracking-wider">
-                Dit nabolag, forbundet
+              <HeartHandshake className="size-4" />
+              <span className="text-sm font-semibold">
+                Tryg hjælp fra unge i nabolaget
               </span>
             </motion.div>
 
             <motion.h1
-              initial={{ opacity: 0, y: 24 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-[1.05] tracking-tight mb-6"
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.08] tracking-tight mb-6"
             >
-              Få tingene gjort af{" "}
-              <span className="text-primary">folk ved siden af</span>
+              Tryg hjælp fra{" "}
+              <span className="text-[var(--trust)]">unge i dit nabolag</span>
             </motion.h1>
 
             <motion.p
-              initial={{ opacity: 0, y: 24 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto mb-10 leading-relaxed"
+              className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed"
             >
-              Hyr betroede naboer til græsslåning, luftning af hund, snerydning
-              og meget mere. Eller tjen penge ved at hjælpe til i dit eget nabolag.
+              Book verificerede lokale hjælpere til sikre udendørs opgaver — med
+              forældregodkendelse for unge under 18. Al betaling og kommunikation
+              foregår i appen.
             </motion.p>
 
+            {/* CTA Buttons */}
             <motion.div
-              initial={{ opacity: 0, y: 24 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center"
+              className="flex flex-col sm:flex-row gap-4 justify-center mb-12"
             >
               <Button
                 onClick={() => navigate("/auth")}
                 size="lg"
-                className="rounded-none border-2 border-foreground shadow-[4px_4px_0px_0px_var(--color-foreground)] hover:shadow-[2px_2px_0px_0px_var(--color-foreground)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-base px-8 h-14"
+                className="rounded-xl bg-[var(--trust)] text-white hover:bg-[var(--trust)]/90 shadow-sm transition-all text-base px-8 h-14 font-semibold"
               >
-                Kom i gang
-                <ArrowRight className="size-5" />
+                Book hjælp
+                <ArrowRight className="size-5 ml-2" />
               </Button>
-              <a href="#how-it-works">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="rounded-none border-2 border-foreground shadow-[4px_4px_0px_0px_var(--color-foreground)] hover:shadow-[2px_2px_0px_0px_var(--color-foreground)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-base px-8 h-14"
+              <Button
+                onClick={() => navigate("/auth")}
+                size="lg"
+                variant="outline"
+                className="rounded-xl border-2 border-border bg-card text-foreground hover:bg-muted shadow-sm transition-all text-base px-8 h-14 font-semibold"
+              >
+                Bliv hjælper
+              </Button>
+            </motion.div>
+
+            {/* Trust row */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl mx-auto"
+            >
+              {[
+                { icon: Shield, text: "MitID-verificerede kunder" },
+                { icon: HeartHandshake, text: "Forældregodkendte unge" },
+                { icon: MapPin, text: "Kun sikre udendørs opgaver" },
+                { icon: Lock, text: "Betaling i appen" },
+              ].map((item) => (
+                <div
+                  key={item.text}
+                  className="flex items-center gap-2 bg-card border border-border rounded-xl px-3 py-2.5"
                 >
-                  Sådan virker det
-                </Button>
-              </a>
+                  <item.icon className="size-4 shrink-0 text-[var(--trust)]" />
+                  <span className="text-xs font-medium text-muted-foreground leading-tight">
+                    {item.text}
+                  </span>
+                </div>
+              ))}
             </motion.div>
           </div>
         </div>
-
-
       </motion.section>
 
       {/* ─── How It Works ─── */}
-      <section id="how-it-works" className="py-20 md:py-28 bg-muted border-y-2 border-foreground">
+      <section id="how-it-works" className="py-20 md:py-28 bg-card border-y border-border">
         <div className="max-w-6xl mx-auto px-4">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
+            viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.5 }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight mb-4">
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
               Sådan virker det
             </h2>
             <p className="text-muted-foreground text-lg max-w-lg mx-auto">
-              Tre enkle trin for at få hjælp eller begynde at tjene penge i dit
-              nabolag.
+              Tre enkle trin til at booke tryg hjælp i dit nabolag.
             </p>
           </motion.div>
 
@@ -298,23 +308,20 @@ export default function Landing() {
             {steps.map((step, i) => (
               <motion.div
                 key={step.title}
-                initial={{ opacity: 0, y: 40 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.5, delay: i * 0.15 }}
-                className="border-2 border-foreground bg-card p-8 text-center relative group hover:shadow-[4px_4px_0px_0px_var(--color-foreground)] hover:-translate-x-[2px] hover:-translate-y-[2px] transition-all"
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ duration: 0.5, delay: i * 0.12 }}
+                className="bg-background border border-border rounded-2xl p-8 text-center relative"
               >
-                {/* Step number */}
-                <div className="absolute -top-4 -left-4 size-8 bg-primary border-2 border-foreground flex items-center justify-center">
-                  <span className="text-primary-foreground font-black text-sm">
-                    {i + 1}
-                  </span>
+                <div className="absolute -top-3 -left-3 size-8 bg-[var(--trust)] rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">{i + 1}</span>
                 </div>
-                <div className="inline-flex items-center justify-center size-16 bg-accent border-2 border-foreground mb-6">
-                  <step.icon className="size-7" />
+                <div className="inline-flex items-center justify-center size-14 bg-[var(--trust)]/10 rounded-xl mb-5">
+                  <step.icon className="size-6 text-[var(--trust)]" />
                 </div>
-                <h3 className="text-xl font-bold mb-3">{step.title}</h3>
-                <p className="text-muted-foreground leading-relaxed">
+                <h3 className="text-lg font-bold mb-2">{step.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   {step.description}
                 </p>
               </motion.div>
@@ -323,38 +330,36 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ─── Categories ─── */}
+      {/* ─── Categories (safe outdoor only) ─── */}
       <section id="categories" className="py-20 md:py-28">
         <div className="max-w-6xl mx-auto px-4">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
+            viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.5 }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight mb-4">
-              Nabolagets ydelser
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+              Udendørs nabolagsydelser
             </h2>
             <p className="text-muted-foreground text-lg max-w-lg mx-auto">
-              Fra græsslåning til møbelflytning — hvad end du har brug for, kan en nabo
-              hjælpe.
+              Kun sikre udendørs opgaver — ingen indendørs arbejde, ingen
+              transport, ingen private hjem.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
             {jobCategories.map((cat, i) => (
               <motion.div
                 key={cat.label}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.3, delay: i * 0.05 }}
-                className="border-2 border-foreground bg-card p-5 text-center cursor-default hover:shadow-[3px_3px_0px_0px_var(--color-foreground)] hover:-translate-x-[1px] hover:-translate-y-[1px] transition-all group"
+                className="bg-card border border-border rounded-2xl p-5 text-center cursor-default hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 transition-all duration-200"
               >
-                <cat.icon
-                  className={`size-8 mx-auto mb-3 ${cat.color} group-hover:scale-110 transition-transform`}
-                />
+                <cat.icon className={`size-8 mx-auto mb-3 ${cat.color}`} />
                 <p className="text-sm font-semibold">{cat.label}</p>
               </motion.div>
             ))}
@@ -362,39 +367,39 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ─── Features ─── */}
-      <section id="features" className="py-20 md:py-28 bg-muted border-y-2 border-foreground">
+      {/* ─── Safety / Trust Features ─── */}
+      <section id="safety" className="py-20 md:py-28 bg-card border-y border-border">
         <div className="max-w-6xl mx-auto px-4">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
+            viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.5 }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight mb-4">
-              Derfor stoler naboer på Neighborly
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+              Tryghed for alle
             </h2>
             <p className="text-muted-foreground text-lg max-w-lg mx-auto">
-              Vi bygger den sikreste og mest pålidelige måde at få tingene gjort
-              lokalt.
+              Neighborly er bygget på tillid — med sikkerhed som fundamentet for
+              hver eneste interaktion.
             </p>
           </motion.div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {features.map((feature, i) => (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {trustFeatures.map((feature, i) => (
               <motion.div
                 key={feature.title}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.4, delay: i * 0.1 }}
-                className="border-2 border-foreground bg-card p-6 group hover:shadow-[4px_4px_0px_0px_var(--color-foreground)] transition-all"
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ duration: 0.4, delay: i * 0.08 }}
+                className="bg-background border border-border rounded-2xl p-6 hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-200"
               >
-                <div className="size-12 bg-primary border-2 border-foreground flex items-center justify-center mb-4">
-                  <feature.icon className="size-6 text-primary-foreground" />
+                <div className="size-11 bg-[var(--trust)]/10 rounded-xl flex items-center justify-center mb-4">
+                  <feature.icon className="size-5 text-[var(--trust)]" />
                 </div>
-                <h3 className="text-lg font-bold mb-2">{feature.title}</h3>
+                <h3 className="text-base font-bold mb-2">{feature.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   {feature.description}
                 </p>
@@ -405,35 +410,33 @@ export default function Landing() {
       </section>
 
       {/* ─── CTA Section ─── */}
-      <section className="py-20 md:py-28 bg-primary border-y-2 border-foreground relative overflow-hidden">
-        {/* Decorative pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 bg-[radial-gradient(circle,var(--color-primary-foreground)_1px,transparent_1px)] bg-[size:20px_20px]" />
+      <section className="py-20 md:py-28 bg-[var(--trust)] relative overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.03]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle,_white_1px,transparent_1px)] bg-[size:24px_24px]" />
         </div>
 
         <div className="max-w-3xl mx-auto px-4 text-center relative z-10">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
+            viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.5 }}
           >
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight mb-6 text-primary-foreground">
-              Klar til at møde dine naboer?
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-6 text-white">
+              Klar til tryg hjælp fra nabolaget?
             </h2>
-            <p className="text-primary-foreground/80 text-lg max-w-lg mx-auto mb-10 leading-relaxed">
-              Bliv en del af nabolaget. Opret din første opgave eller tilmeld dig for
-              at hjælpe andre. Det tager under et minut.
+            <p className="text-white/80 text-lg max-w-lg mx-auto mb-10 leading-relaxed">
+              Book en verificeret lokal hjælper eller tilmeld dig som hjælper.
+              Det tager under et minut.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 onClick={() => navigate("/auth")}
                 size="lg"
-                variant="outline"
-                className="rounded-none border-2 border-primary-foreground bg-primary-foreground text-foreground shadow-[4px_4px_0px_0px_var(--color-foreground)] hover:shadow-[2px_2px_0px_0px_var(--color-foreground)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-base px-8 h-14 font-bold"
+                className="rounded-xl bg-white text-[var(--trust)] hover:bg-white/90 shadow-sm transition-all text-base px-8 h-14 font-bold"
               >
                 Kom gratis i gang
-                <ArrowRight className="size-5" />
+                <ArrowRight className="size-5 ml-2" />
               </Button>
             </div>
           </motion.div>
@@ -441,42 +444,38 @@ export default function Landing() {
       </section>
 
       {/* ─── Footer ─── */}
-      <footer className="border-t-2 border-foreground bg-card py-12">
+      <footer className="border-t border-border bg-card py-12">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="            grid sm:grid-cols-2 md:grid-cols-2 gap-8 mb-10">
-            {/* Brand */}
+          <div className="grid sm:grid-cols-2 gap-8 mb-10">
             <div>
               <div className="flex items-center gap-2 font-bold text-lg mb-3">
-                <div className="size-8 bg-primary flex items-center justify-center rounded-none overflow-hidden">
-                  <Wrench className="size-4 text-primary-foreground" />
+                <div className="size-8 bg-[var(--trust)] flex items-center justify-center rounded-lg">
+                  <Wrench className="size-4 text-white" />
                 </div>
                 Neighborly
               </div>
-              <p className="text-sm text-muted-foreground">
-                Forbinder naboer, én opgave ad gangen.
+              <p className="text-sm text-muted-foreground max-w-xs">
+                Tryg hjælp fra unge i dit nabolag. Forældregodkendt. MitID-verificeret.
+                Kun udendørs.
               </p>
             </div>
 
-            {/* Links */}
             <div>
-              <h4 className="font-bold text-sm mb-3 uppercase tracking-wider">
-                Platform
-              </h4>
+              <h4 className="font-bold text-sm mb-3">Platform</h4>
               <div className="flex flex-col gap-2 text-sm text-muted-foreground">
                 <a href="#how-it-works" className="hover:text-foreground transition-colors">Sådan virker det</a>
                 <a href="#categories" className="hover:text-foreground transition-colors">Ydelser</a>
-                <a href="#features" className="hover:text-foreground transition-colors">Sikkerhed</a>
+                <a href="#safety" className="hover:text-foreground transition-colors">Sikkerhed</a>
               </div>
             </div>
-
           </div>
 
-          <div className="border-t-2 border-foreground pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="border-t border-border pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-xs text-muted-foreground">
               &copy; {new Date().getFullYear()} Neighborly. Alle rettigheder forbeholdes.
             </p>
             <p className="text-xs text-muted-foreground">
-              Lavet med &hearts; til nabolag overalt.
+              Bygget på tillid — for trygge nabolag.
             </p>
           </div>
         </div>
