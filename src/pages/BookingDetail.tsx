@@ -47,6 +47,10 @@ export default function BookingDetail() {
     api.reviews.getBookingReview,
     bookingId ? { bookingId: bookingId as Id<"bookings"> } : "skip"
   );
+  const bookingReviews = useQuery(
+    api.reviews.getBookingReviews,
+    bookingId ? { bookingId: bookingId as Id<"bookings"> } : "skip"
+  );
 
   const [chatInput, setChatInput] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -383,6 +387,75 @@ export default function BookingDetail() {
               Du har anmeldt denne booking. Tak!
             </CardContent>
           </Card>
+        )}
+
+        {/* All reviews for this booking */}
+        {bookingReviews && bookingReviews.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.12 }}
+          >
+            <Card className="rounded-none border-2 border-foreground">
+              <CardHeader>
+                <CardTitle className="text-lg font-black flex items-center gap-2">
+                  <Star className="size-5 fill-accent text-accent" />
+                  Anmeldelser ({bookingReviews.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {bookingReviews
+                  .filter((r: any) => !bookingReview || r.reviewerId !== user?._id)
+                  .map((r: any) => (
+                  <div
+                    key={r._id}
+                    className="border-2 border-foreground/10 p-4"
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <Avatar className="size-8 rounded-none border-2 border-foreground">
+                        <AvatarFallback className="rounded-none font-bold text-xs">
+                          {r.reviewer?.name
+                            ?.split(" ")
+                            .map((n: string) => n[0])
+                            .join("")
+                            .toUpperCase()
+                            .slice(0, 2) || "?"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="text-sm font-bold">
+                          {r.reviewer?.name || "Anonym"}
+                          <span className="ml-2 text-xs text-muted-foreground font-normal">
+                            {r.role === "customer" ? "Kunde" : "Hjælper"}
+                          </span>
+                        </p>
+                        <div className="flex gap-0.5 mt-0.5">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`size-3 ${
+                                star <= r.rating
+                                  ? "fill-accent text-accent"
+                                  : "text-muted-foreground/30"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <span className="ml-auto text-xs text-muted-foreground">
+                        {new Date(r.createdAt).toLocaleDateString("da-DK")}
+                      </span>
+                    </div>
+                    {r.comment && (
+                      <p className="text-sm text-muted-foreground">
+                        "{r.comment}"
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </motion.div>
         )}
 
         {/* Chat */}

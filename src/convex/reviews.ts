@@ -71,7 +71,8 @@ export const getUserReviews = query({
       reviews.map(async (r) => {
         const reviewer = await ctx.db.get(r.reviewerId);
         const booking = await ctx.db.get(r.bookingId);
-        return { ...r, reviewer, booking };
+        const job = booking ? await ctx.db.get(booking.jobId) : null;
+        return { ...r, reviewer, booking, jobTitle: job?.title ?? null };
       }),
     );
   },
@@ -87,5 +88,29 @@ export const getBookingReview = query({
       .filter((q) => q.eq(q.field("reviewerId"), userId))
       .first();
     return review;
+  },
+});
+
+export const getBookingReviews = query({
+  args: { bookingId: v.id("bookings") },
+  handler: async (ctx, args) => {
+    const { userId } = await requireUser(ctx);
+    const booking = await ctx.db.get(args.bookingId);
+    if (!booking) throw new Error("Booking ikke fundet");
+    if (booking.customerId !== userId && booking.helperId !== userId) {
+      throw new Error("Ikke en del af denne booking");
+    }
+
+    const reviews = await ctx.db
+      .query("reviews")
+      .withIndex("by_booking", (q) => q.eq("bookingId", args.bookingId))
+      .collect();
+
+    return await Promise.all(
+      reviews.map(async (r) => {
+        const reviewer = await ctx.db.get(r.reviewerId);
+        return { ...r, reviewer };
+      }),
+    );
   },
 });

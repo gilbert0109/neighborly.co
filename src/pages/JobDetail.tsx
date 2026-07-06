@@ -32,6 +32,10 @@ export default function JobDetail() {
   const [scheduledDate, setScheduledDate] = useState("");
   const [notes, setNotes] = useState("");
   const [isBooking, setIsBooking] = useState(false);
+  const customerReviews = useQuery(
+    api.reviews.getUserReviews,
+    jobData?.customer?._id ? { userId: jobData.customer._id } : "skip"
+  );
 
   if (jobData === undefined) {
     return (
@@ -180,6 +184,50 @@ export default function JobDetail() {
                         </span>
                       </div>
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Customer reviews */}
+              {customerReviews && customerReviews.length > 0 && (
+                <div className="border-t-2 border-foreground/10 pt-4">
+                  <p className="text-sm font-bold mb-3 flex items-center gap-2">
+                    <Star className="size-4 fill-accent text-accent" />
+                    Seneste anmeldelser af {customer?.name || "kunden"}
+                  </p>
+                  <div className="space-y-3">
+                    {customerReviews.slice(0, 3).map((r: any) => (
+                      <div
+                        key={r._id}
+                        className="border-2 border-foreground/10 p-3"
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs font-bold">
+                            {r.reviewer?.name || "Anonym"}
+                          </span>
+                          <div className="flex gap-0.5">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Star
+                                key={star}
+                                className={`size-3 ${
+                                  star <= r.rating
+                                    ? "fill-accent text-accent"
+                                    : "text-muted-foreground/30"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <span className="ml-auto text-[10px] text-muted-foreground">
+                            {new Date(r.createdAt).toLocaleDateString("da-DK")}
+                          </span>
+                        </div>
+                        {r.comment && (
+                          <p className="text-xs text-muted-foreground italic">
+                            "{r.comment}"
+                          </p>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
