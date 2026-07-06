@@ -33,8 +33,9 @@ jobs:
       - name: Build for GitHub Pages
         run: bun run build
         env:
-          GITHUB_PAGES_BASE: "/${{ github.event.repository.name }}/"
+          CUSTOM_DOMAIN: "true"
           VITE_CONVEX_URL: ${{ secrets.VITE_CONVEX_URL }}
+        # public/CNAME kopieres automatisk til dist/ under Vite build
 
       - uses: actions/configure-pages@v5
       - name: Upload artifact

@@ -6,8 +6,9 @@ import { defineConfig } from "vite";
 
 // https://vite.dev/config/
 export default defineConfig({
-  // Set GITHUB_PAGES_BASE="/<repo-navn>/" for GitHub Pages deployment
-  base: process.env.GITHUB_PAGES_BASE || "/",
+  // For GitHub Pages with custom domain (Neighborly.com), use "/"
+  // For GitHub Pages project site (username.github.io/repo/), set env GITHUB_PAGES_BASE="/repo-name/"
+  base: process.env.CUSTOM_DOMAIN === "true" ? "/" : (process.env.GITHUB_PAGES_BASE || "/"),
   plugins: [vlyPlugin(), react(), tailwindcss()],
   resolve: {
     alias: {
