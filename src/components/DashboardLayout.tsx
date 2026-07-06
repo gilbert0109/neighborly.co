@@ -85,14 +85,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex h-screen w-full">
-        <Sidebar className="border-r-2 border-foreground">
+        <Sidebar className="border-r border-border">
           <SidebarHeader className="p-4">
             <button
               onClick={() => navigate("/")}
               className="flex items-center gap-2 font-bold text-lg tracking-tight hover:opacity-80 transition-opacity"
             >
-              <div className="size-8 bg-primary flex items-center justify-center rounded-none">
-                <Wrench className="size-4 text-primary-foreground" />
+              <div className="size-8 bg-[var(--trust)] flex items-center justify-center rounded-lg">
+                <Wrench className="size-4 text-white" />
               </div>
               <span>Neighborly</span>
             </button>
@@ -117,8 +117,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                       isActive={isActive}
                       onClick={() => navigate(item.path)}
                       className={cn(
-                        "cursor-pointer rounded-none",
-                        isActive && "border-2 border-foreground bg-accent"
+                        "cursor-pointer rounded-lg",
+                        isActive && "border border-border bg-accent"
                       )}
                     >
                       <item.icon className="size-4" />
@@ -126,7 +126,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                       {item.path === "/conversations" &&
                         totalUnread !== undefined &&
                         totalUnread > 0 && (
-                          <span className="bg-primary text-primary-foreground text-[10px] font-bold px-1.5 py-0.5 min-w-[18px] text-center border border-foreground leading-none">
+                          <span className="bg-[var(--trust)] text-white text-[10px] font-bold px-1.5 py-0.5 min-w-[18px] text-center rounded-full leading-none">
                             {totalUnread > 99 ? "99+" : totalUnread}
                           </span>
                         )}
@@ -137,10 +137,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </SidebarMenu>
           </SidebarContent>
 
-          <SidebarFooter className="border-t-2 border-foreground p-4">
+          <SidebarFooter className="border-t border-border p-4">
             <div className="flex items-center gap-3 mb-3">
-              <Avatar className="size-8 rounded-none border-2 border-foreground">
-                <AvatarFallback className="rounded-none text-xs font-bold">
+              <Avatar className="size-8 rounded-lg border border-border">
+                <AvatarFallback className="rounded-lg text-xs font-bold">
                   {initials}
                 </AvatarFallback>
               </Avatar>
@@ -157,17 +157,17 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               variant="outline"
               size="sm"
               onClick={handleSignOut}
-              className="w-full rounded-none border-2 border-foreground"
+              className="w-full rounded-lg border border-border"
             >
-              <LogOut className="size-3" />
+              <LogOut className="size-3 mr-1.5" />
               Log ud
             </Button>
           </SidebarFooter>
         </Sidebar>
 
         <SidebarInset className="flex flex-col">
-          <header className="h-14 border-b-2 border-foreground flex items-center px-4 gap-3 shrink-0">
-            <SidebarTrigger className="rounded-none border-2 border-foreground" />
+          <header className="h-14 border-b border-border flex items-center px-4 gap-3 shrink-0">
+            <SidebarTrigger className="rounded-lg border border-border" />
             <h1 className="font-bold text-lg truncate">
               {matchCurrentPath(location.pathname, navItems as ReadonlyArray<{ path: string; label: string }>) || "Neighborly"}
             </h1>

@@ -103,38 +103,38 @@ export default function PostJob() {
         </button>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0px_0px_var(--color-foreground)]">
+          <Card className="rounded-2xl border border-border shadow-sm">
             <CardHeader>
-              <CardTitle className="text-2xl font-black">
+              <CardTitle className="text-2xl font-bold">
                 Opret en ny opgave
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Beskriv, hvad du har brug for, så vil naboer tilbyde at hjælpe.
+                Beskriv en sikker udendørs opgave, så naboer kan byde på den.
               </p>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Title */}
                 <div>
-                  <label className="text-sm font-bold block mb-1">
+                  <label className="text-sm font-semibold block mb-1.5">
                     Opgavetitel <span className="text-destructive">*</span>
                   </label>
                   <Input
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder='F.eks. "Slå min græsplæne"'
-                    className="rounded-none border-2 border-foreground"
+                    className="rounded-xl border border-border"
                     required
                   />
                 </div>
 
                 {/* Category */}
                 <div>
-                  <label className="text-sm font-bold block mb-1">
+                  <label className="text-sm font-semibold block mb-1.5">
                     Kategori <span className="text-destructive">*</span>
                   </label>
                   <Select value={category} onValueChange={setCategory}>
-                    <SelectTrigger className="w-full rounded-none border-2 border-foreground">
+                    <SelectTrigger className="w-full rounded-xl border border-border">
                       <SelectValue placeholder="Vælg en kategori" />
                     </SelectTrigger>
                     <SelectContent>
@@ -149,14 +149,14 @@ export default function PostJob() {
 
                 {/* Description */}
                 <div>
-                  <label className="text-sm font-bold block mb-1">
+                  <label className="text-sm font-semibold block mb-1.5">
                     Beskrivelse <span className="text-destructive">*</span>
                   </label>
                   <Textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Beskriv opgaven i detaljer. Inkluder størrelse, varighed, særlige krav..."
-                    className="rounded-none border-2 border-foreground"
+                    placeholder="Beskriv opgaven i detaljer. Størrelse, varighed, særlige forhold..."
+                    className="rounded-xl border border-border"
                     rows={4}
                     required
                   />
@@ -165,7 +165,7 @@ export default function PostJob() {
                 {/* Price & Address row */}
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-bold block mb-1">
+                    <label className="text-sm font-semibold block mb-1.5">
                       Pris (DKK) <span className="text-destructive">*</span>
                     </label>
                     <Input
@@ -173,7 +173,7 @@ export default function PostJob() {
                       value={price}
                       onChange={(e) => setPrice(e.target.value)}
                       placeholder="200"
-                      className="rounded-none border-2 border-foreground"
+                      className="rounded-xl border border-border"
                       min="10"
                       step="10"
                       required
@@ -183,14 +183,14 @@ export default function PostJob() {
                     </p>
                   </div>
                   <div>
-                    <label className="text-sm font-bold block mb-1">
+                    <label className="text-sm font-semibold block mb-1.5">
                       Planlagt dato
                     </label>
                     <Input
                       type="date"
                       value={scheduledDate}
                       onChange={(e) => setScheduledDate(e.target.value)}
-                      className="rounded-none border-2 border-foreground"
+                      className="rounded-xl border border-border"
                       min={new Date().toISOString().split("T")[0]}
                     />
                     <p className="text-xs text-muted-foreground mt-1">
@@ -202,26 +202,26 @@ export default function PostJob() {
                 {/* Address row */}
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-bold block mb-1">
+                    <label className="text-sm font-semibold block mb-1.5">
                       Adresse <span className="text-destructive">*</span>
                     </label>
                     <Input
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
                       placeholder="Nørrebrogade 12"
-                      className="rounded-none border-2 border-foreground"
+                      className="rounded-xl border border-border"
                       required
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-bold block mb-1">
+                    <label className="text-sm font-semibold block mb-1.5">
                       By
                     </label>
                     <Input
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
                       placeholder="København"
-                      className="rounded-none border-2 border-foreground"
+                      className="rounded-xl border border-border"
                     />
                   </div>
                 </div>
@@ -230,9 +230,9 @@ export default function PostJob() {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full rounded-none border-2 border-foreground shadow-[4px_4px_0px_0px_var(--color-foreground)] hover:shadow-[2px_2px_0px_0px_var(--color-foreground)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                  className="w-full rounded-xl bg-[var(--trust)] text-white hover:bg-[var(--trust)]/90 shadow-sm transition-all"
                 >
-                  <Send className="size-4" />
+                  <Send className="size-4 mr-2" />
                   {isSubmitting ? "Opretter..." : "Opret opgave"}
                 </Button>
               </form>
