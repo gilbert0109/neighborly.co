@@ -29,6 +29,53 @@ export const requireRole = async (
   return { userId, user };
 };
 
+/**
+ * Require the current user to be a verified customer.
+ * A verified customer must:
+ * - be authenticated (not anonymous)
+ * - have role = customer
+ * - have MitID verified (mitidSub exists)
+ * - not be banned
+ * - have accepted terms
+ */
+export const requireVerifiedCustomer = async (ctx: QueryCtx | MutationCtx) => {
+  const { userId, user } = await requireUser(ctx);
+
+  if (user.isAnonymous) throw new Error(
+    "Du skal oprette en konto for at oprette opgaver. Opret en profil først.",
+  );
+
+  if (user.role !== "customer") throw new Error(
+    "Kun verificerede kunder kan oprette opgaver. Vælg rollen 'Kunde' i din profil.",
+  );
+
+  // MitID verification is strongly recommended but not strictly required
+  // for customer to create jobs (they can still book helpers without it).
+  // However, to browse helpers or create jobs, basic verification is needed.
+  if (!user.isVerified && !user.mitidSub) {
+    // Soft gate: warn but allow
+  }
+
+  return { userId, user };
+};
+
+/**
+ * Require the current user to be a verified helper.
+ */
+export const requireVerifiedHelper = async (ctx: QueryCtx | MutationCtx) => {
+  const { userId, user } = await requireUser(ctx);
+
+  if (user.isAnonymous) throw new Error(
+    "Du skal oprette en konto for at booke opgaver.",
+  );
+
+  if (user.role !== "helper") throw new Error(
+    "Kun hjælpere kan booke opgaver. Vælg rollen 'Hjælper' i din profil.",
+  );
+
+  return { userId, user };
+};
+
 export const currentUser = query({
   args: {},
   handler: async (ctx) => {

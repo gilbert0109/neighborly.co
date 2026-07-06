@@ -15,7 +15,8 @@ export const roleValidator = v.union(
 );
 export type Role = Infer<typeof roleValidator>;
 
-// Only outdoor job categories allowed
+// Only safe outdoor job categories allowed in MVP
+// No indoor, no transport, no private-home categories
 export const JOB_CATEGORIES = [
   "lawn-mowing",
   "gardening",
@@ -23,10 +24,7 @@ export const JOB_CATEGORIES = [
   "snow-shoveling",
   "car-washing",
   "leaf-raking",
-  "grocery-delivery",
-  "furniture-moving",
-  "window-cleaning",
-  "bike-repair",
+  "outdoor-help",
   "other-outdoor",
 ] as const;
 
@@ -207,8 +205,18 @@ const schema = defineSchema(
       parentName: v.optional(v.string()),
       approved: v.boolean(),
       approvedAt: v.optional(v.number()),
-      token: v.string(), // unique token for approval link
+      revokedAt: v.optional(v.number()),
+      allowedCategories: v.optional(v.array(jobCategoryValidator)),
+      maxDistanceKm: v.optional(v.number()),
+      allowedStartTime: v.optional(v.string()), // "HH:MM" format
+      allowedEndTime: v.optional(v.string()),   // "HH:MM" format
+      perJobApproval: v.optional(v.boolean()),
+      emergencyContactPhone: v.optional(v.string()),
+      paused: v.optional(v.boolean()),
+      pausedAt: v.optional(v.number()),
+      token: v.string(),
       createdAt: v.number(),
+      updatedAt: v.number(),
     })
       .index("by_child", ["childId"])
       .index("by_token", ["token"]),

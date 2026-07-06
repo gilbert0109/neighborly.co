@@ -1,8 +1,9 @@
 import { v } from "convex/values";
 import { query, mutation, action } from "./_generated/server";
-import { requireUser, requireRole } from "./users";
+import { requireUser, requireRole, requireVerifiedHelper } from "./users";
 import { ROLES } from "./schema";
 import { internal } from "./_generated/api";
+import { requireParentApproval, validateMinorWorkerJob, checkWorkingHours } from "./parentApprovals";
 
 export const createBooking = mutation({
   args: {
@@ -11,14 +12,34 @@ export const createBooking = mutation({
     customerNotes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const { userId, user } = await requireUser(ctx);
-    if (user.role !== "helper") throw new Error("Kun hjælpere kan booke opgaver");
-    if (user.age !== undefined && user.age < 18 && !user.parentApproved) {
-      throw new Error("Hjælpere under 18 skal have forældregodkendelse før booking");
-    }
+    const { userId, user } = await requireVerifiedHelper(ctx);
 
-    // Teenagers (under 18) cannot work between 18:00 and 08:00
+    // Minor-worker safety rules
     if (user.age !== undefined && user.age < 18) {
+      // Check parent approval + validate job against parent permissions
+      if (job) {
+        const error = await validateMinorWorkerJob(ctx, userId, job);
+        if (error) throw new Error(error);
+      }
+
+      // Check working hours (from parent settings)
+      const approval = await ctx.db
+        .query("parentApprovals")
+        .withIndex("by_child", (q) => q.eq("childId", userId))
+        .filter((q) => q.eq(q.field("approved"), true))
+        .first();
+
+      if (approval) {
+        if (approval.allowedStartTime || approval.allowedEndTime) {
+          const hoursError = checkWorkingHours(
+            approval.allowedStartTime ?? undefined,
+            approval.allowedEndTime ?? undefined,
+          );
+          if (hoursError) throw new Error(hoursError);
+        }
+      }
+
+      // Also check default 18:00-08:00 restriction
       const hour = new Date(args.scheduledDate).getHours();
       if (hour >= 18 || hour < 8) {
         throw new Error("Unge under 18 kan ikke arbejde mellem kl. 18:00 og 08:00. Vælg et tidspunkt mellem 08:00-18:00.");
@@ -94,9 +115,31 @@ export const updateBookingStatus = mutation({
     // Helper marks in progress
     if (args.status === "in_progress" && isHelper) {
       if (booking.status !== "accepted") throw new Error("Kan kun starte accepterede bookinger");
-      // Teenagers cannot work between 18:00 and 08:00
+
+      // Minor-worker safety checks
       const helper = await ctx.db.get(booking.helperId);
       if (helper?.age !== undefined && helper.age < 18) {
+        // Check parent approval is still active
+        const approval = await ctx.db
+          .query("parentApprovals")
+          .withIndex("by_child", (q) => q.eq("childId", booking.helperId))
+          .filter((q) => q.eq(q.field("approved"), true))
+          .first();
+
+        if (!approval) throw new Error("Forældregodkendelse er ikke længere aktiv");
+        if (approval.revokedAt) throw new Error("Forældregodkendelse er blevet tilbagekaldt");
+        if (approval.paused) throw new Error("Forældregodkendelse er sat på pause");
+
+        // Check parent-defined working hours
+        if (approval.allowedStartTime || approval.allowedEndTime) {
+          const hoursError = checkWorkingHours(
+            approval.allowedStartTime ?? undefined,
+            approval.allowedEndTime ?? undefined,
+          );
+          if (hoursError) throw new Error(hoursError);
+        }
+
+        // Default 18:00-08:00 restriction
         const hour = new Date().getHours();
         if (hour >= 18 || hour < 8) {
           throw new Error("Unge under 18 kan ikke arbejde mellem kl. 18:00 og 08:00. Vent til efter kl. 08:00.");

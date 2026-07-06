@@ -1,8 +1,9 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 import { requireUser } from "./users";
+import { internal } from "./_generated/api";
 
-// Patterns to filter from chat
+// Patterns for blocked content (masked but delivered with warning)
 const BLOCKED_PATTERNS = [
   /\b\d{8,}\b/, // Long number sequences (phone numbers)
   /\b\d{2}\s?\d{2}\s?\d{2}\s?\d{2}\b/, // DK phone format
@@ -10,26 +11,69 @@ const BLOCKED_PATTERNS = [
   /\bhttps?:\/\/\S+\b/, // URLs
   /\bwww\.\S+\b/, // www links
   /@\w+/, // Social media handles
-  /\b(indendørs|indendoers|indendors|indenfor|inside)\b/i, // Indoor keywords
-  /\b(facebook|instagram|snapchat|whatsapp|telegram|signal|discord|messenger)\b/i, // Social platforms
-  /\b(kontanter|cash|penge|mobilepay)\b/i, // Cash/payment keywords (Danish)
-  /\b(meet me|meet at my|come to my|my house|my place|hjemme hos|hjemme)\b/i, // Meeting at home
+  /\b(indendørs|indendoers|indendors|indenfor|inside)\b/i,
+  /\b(facebook|instagram|snapchat|whatsapp|telegram|signal|discord|messenger)\b/i,
+  /\b(kontanter|cash|penge|mobilepay|paypal|swish|vipps|venmo|zelle)\b/i,
+  /\b(meet me|meet at my|come to my|my house|my place|hjemme hos|hjemme)\b/i,
+  /\b(send photo|send picture|send a photo|send a picture|send billede)\b/i,
 ];
 
-export function filterMessage(content: string): { filtered: string; wasFiltered: boolean; reason?: string } {
-  let filtered = content;
-  let wasFiltered = false;
-  let reason: string | undefined;
+// Severe grooming patterns — message is BLOCKED (not delivered), report created
+const SEVERE_PATTERNS = [
+  /\b(don'?t tell your parents|do not tell your parents)\b/i,
+  /\b(keep this secret|keep this between us)\b/i,
+  /\b(come alone|are you alone|kom alene|er du alene)\b/i,
+  /\b(send me a photo|send me a picture|send mig et billede)\b/i,
+  /\b(meet me somewhere else|mød mig et andet sted)\b/i,
+  /\b(text me|call me|ring til mig|sms mig)\b/i,
+  /\b(outside the app|uden for appen|udenfor appen)\b/i,
+  /\b(different address|anden adresse|andet sted)\b/i,
+];
 
-  for (const pattern of BLOCKED_PATTERNS) {
-    if (pattern.test(filtered)) {
-      filtered = filtered.replace(pattern, (match) => "*".repeat(match.length));
-      wasFiltered = true;
-      reason = "Beskeden indeholdt begrænset indhold og blev filtreret af sikkerhedshensyn.";
+export interface FilterResult {
+  blocked: boolean;
+  severe: boolean;
+  reason: string;
+  matchedPattern?: string;
+}
+
+/**
+ * Filter a chat message and return whether it's blocked or masked.
+ * - Normal blocked content: message is masked (stars), delivered, warning shown
+ * - Severe grooming content: message is blocked entirely, report created
+ */
+export function filterMessage(content: string): FilterResult {
+  // First check severe patterns
+  for (const pattern of SEVERE_PATTERNS) {
+    const match = content.match(pattern);
+    if (match) {
+      return {
+        blocked: true,
+        severe: true,
+        reason: "Beskeden indeholder indhold, der ikke er tilladt. Sikkerhedsrapport oprettet.",
+        matchedPattern: match[0],
+      };
     }
   }
 
-  return { filtered, wasFiltered, reason };
+  // Then check normal blocked patterns
+  for (const pattern of BLOCKED_PATTERNS) {
+    const match = content.match(pattern);
+    if (match) {
+      return {
+        blocked: true,
+        severe: false,
+        reason: "Beskeden indeholdt begrænset indhold og blev blokeret af sikkerhedshensyn.",
+        matchedPattern: match[0],
+      };
+    }
+  }
+
+  return {
+    blocked: false,
+    severe: false,
+    reason: "",
+  };
 }
 
 export const sendMessage = mutation({
@@ -56,17 +100,70 @@ export const sendMessage = mutation({
     const receiverId =
       booking.customerId === userId ? booking.helperId : booking.customerId;
 
-    const { filtered, wasFiltered, reason } = filterMessage(args.content);
+    const { blocked, severe, reason, matchedPattern } = filterMessage(args.content);
 
-    return await ctx.db.insert("messages", {
+    if (blocked && severe) {
+      // Severe: message is NOT delivered, safety report is created
+      const now = Date.now();
+
+      // Schedule report via scheduler — NOT rolled back by the throw below
+      await ctx.scheduler.runAfter(0, internal.admin.createSafetyReport, {
+        reportedUserId: userId,
+        bookingId: args.bookingId,
+        reason: "grooming_attempt",
+        details: `Alvorlig besked blokeret. Mønster: ${matchedPattern || "ukendt"}. Besked: ${args.content.substring(0, 200)}`,
+        messageContent: args.content,
+      });
+
+      await ctx.db.insert("messages", {
+        bookingId: args.bookingId,
+        senderId: userId,
+        receiverId,
+        content: args.content,
+        isFiltered: true,
+        filterReason: reason,
+        createdAt: now,
+      });
+
+      throw new Error(
+        "Beskeden blev blokeret af sikkerhedshensyn. Rapporten er sendt til vores team.",
+      );
+    }
+
+    // Normal blocked content: mask and deliver
+    const filteredContent = blocked
+      ? args.content.replace(
+          new RegExp(matchedPattern?.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") || "", "gi"),
+          (match) => "*".repeat(match.length),
+        )
+      : args.content;
+
+    const now = Date.now();
+    const messageId = await ctx.db.insert("messages", {
       bookingId: args.bookingId,
       senderId: userId,
       receiverId,
-      content: filtered,
-      isFiltered: wasFiltered || undefined,
-      filterReason: reason,
-      createdAt: Date.now(),
+      content: filteredContent,
+      isFiltered: blocked ? true : undefined,
+      filterReason: blocked ? reason : undefined,
+      createdAt: now,
     });
+
+    // If blocked (non-severe), log a blocked message record for admin review
+    if (blocked) {
+      await ctx.db.insert("reports", {
+        reporterId: userId,
+        reportedUserId: userId,
+        bookingId: args.bookingId,
+        reason: `off_platform_contact`,
+        details: `Blokeret indhold. Mønster: ${matchedPattern || "ukendt"}. Besked: ${args.content.substring(0, 200)}`,
+        status: "pending",
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
+
+    return messageId;
   },
 });
 

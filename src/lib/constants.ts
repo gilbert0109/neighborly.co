@@ -5,10 +5,7 @@ export const JOB_CATEGORY_LABELS: Record<string, string> = {
   "snow-shoveling": "Snerydning",
   "car-washing": "Bilvask",
   "leaf-raking": "Løvrivning",
-  "grocery-delivery": "Indkøbslevering",
-  "furniture-moving": "Møbelflytning",
-  "window-cleaning": "Vinduespudsning",
-  "bike-repair": "Cykelreparation",
+  "outdoor-help": "Udendørs småhjælp",
   "other-outdoor": "Andet udendørs",
 };
 
@@ -19,10 +16,7 @@ export const JOB_CATEGORIES = [
   { value: "snow-shoveling", label: "Snerydning" },
   { value: "car-washing", label: "Bilvask" },
   { value: "leaf-raking", label: "Løvrivning" },
-  { value: "grocery-delivery", label: "Indkøbslevering" },
-  { value: "furniture-moving", label: "Møbelflytning" },
-  { value: "window-cleaning", label: "Vinduespudsning" },
-  { value: "bike-repair", label: "Cykelreparation" },
+  { value: "outdoor-help", label: "Udendørs småhjælp" },
   { value: "other-outdoor", label: "Andet udendørs" },
 ] as const;
 

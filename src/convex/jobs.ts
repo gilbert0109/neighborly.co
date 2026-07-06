@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
-import { requireUser, requireRole } from "./users";
+import { requireUser, requireRole, requireVerifiedCustomer } from "./users";
 import { ROLES, jobCategoryValidator, JOB_CATEGORIES } from "./schema";
 
 export const listJobs = query({
@@ -154,10 +154,7 @@ export const createJob = mutation({
     scheduledDate: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const { userId, user } = await requireUser(ctx);
-    if (user.role && user.role !== "customer" && user.role !== "admin") {
-      throw new Error("Kun kunder kan oprette jobs. Vælg rollen 'Kunde' i din profil.");
-    }
+    const { userId, user } = await requireVerifiedCustomer(ctx);
 
     const now = Date.now();
     return await ctx.db.insert("jobs", {
