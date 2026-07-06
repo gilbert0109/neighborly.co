@@ -166,7 +166,7 @@ export default function ParentDashboard() {
             <div>
               <h2 className="text-2xl sm:text-3xl font-bold">Forældrekontrol</h2>
               <p className="text-muted-foreground mt-1">
-                Administrer {user?.name?.split(" ")[0] || "dit barn"s} indstillinger og sikkerhed
+                Administrer {user?.name?.split(" ")[0] || "dit barns"} indstillinger og sikkerhed
               </p>
             </div>
           </div>
