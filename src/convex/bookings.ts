@@ -17,6 +17,14 @@ export const createBooking = mutation({
       throw new Error("Hjælpere under 18 skal have forældregodkendelse før booking");
     }
 
+    // Teenagers (under 18) cannot work between 18:00 and 08:00
+    if (user.age !== undefined && user.age < 18) {
+      const hour = new Date(args.scheduledDate).getHours();
+      if (hour >= 18 || hour < 8) {
+        throw new Error("Unge under 18 kan ikke arbejde mellem kl. 18:00 og 08:00. Vælg et tidspunkt mellem 08:00-18:00.");
+      }
+    }
+
     const job = await ctx.db.get(args.jobId);
     if (!job) throw new Error("Opgave ikke fundet");
     if (job.status !== "open") throw new Error("Opgaven er ikke tilgængelig");
@@ -86,6 +94,14 @@ export const updateBookingStatus = mutation({
     // Helper marks in progress
     if (args.status === "in_progress" && isHelper) {
       if (booking.status !== "accepted") throw new Error("Kan kun starte accepterede bookinger");
+      // Teenagers cannot work between 18:00 and 08:00
+      const helper = await ctx.db.get(booking.helperId);
+      if (helper?.age !== undefined && helper.age < 18) {
+        const hour = new Date().getHours();
+        if (hour >= 18 || hour < 8) {
+          throw new Error("Unge under 18 kan ikke arbejde mellem kl. 18:00 og 08:00. Vent til efter kl. 08:00.");
+        }
+      }
     }
 
     // Either party marks completed

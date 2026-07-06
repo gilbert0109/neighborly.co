@@ -177,6 +177,17 @@ const schema = defineSchema(
       endTime: v.string(),
     }).index("by_helper", ["helperId"]),
 
+    helperLocations: defineTable({
+      helperId: v.id("users"),
+      bookingId: v.id("bookings"),
+      location: v.object({ lat: v.number(), lng: v.number() }),
+      heading: v.optional(v.number()),
+      speed: v.optional(v.number()),
+      updatedAt: v.number(),
+    })
+      .index("by_helper", ["helperId"])
+      .index("by_booking", ["bookingId"]),
+
     messages: defineTable({
       bookingId: v.id("bookings"),
       senderId: v.id("users"),

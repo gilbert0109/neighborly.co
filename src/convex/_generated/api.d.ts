@@ -15,6 +15,7 @@ import type * as availability from "../availability.js";
 import type * as bookings from "../bookings.js";
 import type * as http from "../http.js";
 import type * as jobs from "../jobs.js";
+import type * as locations from "../locations.js";
 import type * as messages from "../messages.js";
 import type * as mitid from "../mitid.js";
 import type * as parentApprovals from "../parentApprovals.js";
@@ -35,6 +36,7 @@ declare const fullApi: ApiFromModules<{
   bookings: typeof bookings;
   http: typeof http;
   jobs: typeof jobs;
+  locations: typeof locations;
   messages: typeof messages;
   mitid: typeof mitid;
   parentApprovals: typeof parentApprovals;

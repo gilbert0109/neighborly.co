@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
+import LiveTracker from "@/components/LiveTracker";
 import { STATUS_COLORS, STATUS_LABELS } from "@/lib/constants";
 
 export default function BookingDetail() {
@@ -328,6 +329,16 @@ export default function BookingDetail() {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Live tracking (in_progress bookings) */}
+        <LiveTracker
+          bookingId={bookingId as string}
+          isHelper={isHelper}
+          isInProgress={bookingData.status === "in_progress"}
+          jobAddress={job?.address}
+          jobLocation={job?.location}
+          helperName={helper?.name}
+        />
 
         {/* Review section (completed bookings) */}
         {bookingData.status === "completed" && !bookingReview && (
