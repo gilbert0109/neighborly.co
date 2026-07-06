@@ -1,7 +1,4 @@
-import '@vly-ai/integrations';
 import { Toaster } from "@/components/ui/sonner";
-import { VlyToolbar } from "../vly-toolbar-readonly.tsx";
-import { InstrumentationProvider } from "@/instrumentation.tsx";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { ConvexReactClient } from "convex/react";
@@ -39,17 +36,16 @@ function RouteLoading() {
   );
 }
 
-const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
-
-
-
 function RouteSyncer() {
   const location = useLocation();
   useEffect(() => {
-    window.parent.postMessage(
-      { type: "iframe-route-change", path: location.pathname },
-      "*",
-    );
+    // Only sync route changes if inside an iframe (Freebuff dev mode)
+    if (window !== window.parent) {
+      window.parent.postMessage(
+        { type: "iframe-route-change", path: location.pathname },
+        "*",
+      );
+    }
   }, [location.pathname]);
 
   useEffect(() => {
@@ -66,38 +62,54 @@ function RouteSyncer() {
   return null;
 }
 
+// Verify Convex URL is set before creating client (constructor doesn't throw on invalid URL)
+const convexUrl = import.meta.env.VITE_CONVEX_URL;
+if (!convexUrl) {
+  document.getElementById("root")!.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#FAFAF7;padding:20px;">
+      <div style="text-align:center;max-width:400px;">
+        <h1 style="font-size:24px;font-weight:700;color:#111;margin-bottom:8px;">Neighborly</h1>
+        <p style="color:#666;font-size:14px;line-height:1.5;">
+          Backend-URL mangler. Sørg for at VITE_CONVEX_URL er sat som environment variable i Vercel.
+        </p>
+        <p style="color:#999;font-size:12px;margin-top:12px;">
+          Kontakt support@neighborly.dk for hjælp.
+        </p>
+      </div>
+    </div>
+  `;
+  throw new Error("VITE_CONVEX_URL is not set");
+}
+const convex = new ConvexReactClient(convexUrl);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <VlyToolbar />
-    <InstrumentationProvider>
-      <ConvexAuthProvider client={convex}>
-        <BrowserRouter>
-          <RouteSyncer />
-          <Suspense fallback={<RouteLoading />}>
-            <Routes>
-              <Route path="/" element={<Landing />} />
-              <Route path="/auth" element={<AuthPage redirectAfterAuth="/dashboard" />} />
-              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-              <Route path="/jobs" element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
-              <Route path="/jobs/new" element={<ProtectedRoute><PostJob /></ProtectedRoute>} />
-              <Route path="/jobs/:jobId" element={<ProtectedRoute><JobDetail /></ProtectedRoute>} />
-              <Route path="/bookings" element={<ProtectedRoute><Bookings /></ProtectedRoute>} />
-              <Route path="/bookings/:bookingId" element={<ProtectedRoute><BookingDetail /></ProtectedRoute>} />
-              <Route path="/conversations" element={<ProtectedRoute><Conversations /></ProtectedRoute>} />
-              <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
-              <Route path="/mitid-sandbox" element={<MitIDSandbox />} />
-              <Route path="/mitid-callback" element={<ProtectedRoute><MitIDCallback /></ProtectedRoute>} />
-              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-              <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-              <Route path="/helper-dashboard" element={<ProtectedRoute><HelperDashboard /></ProtectedRoute>} />
-              <Route path="/parent-dashboard" element={<ProtectedRoute><ParentDashboard /></ProtectedRoute>} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
-        <Toaster />
-      </ConvexAuthProvider>
-    </InstrumentationProvider>
+    <ConvexAuthProvider client={convex}>
+      <BrowserRouter>
+        <RouteSyncer />
+        <Suspense fallback={<RouteLoading />}>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/auth" element={<AuthPage redirectAfterAuth="/dashboard" />} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/jobs" element={<ProtectedRoute><Jobs /></ProtectedRoute>} />
+            <Route path="/jobs/new" element={<ProtectedRoute><PostJob /></ProtectedRoute>} />
+            <Route path="/jobs/:jobId" element={<ProtectedRoute><JobDetail /></ProtectedRoute>} />
+            <Route path="/bookings" element={<ProtectedRoute><Bookings /></ProtectedRoute>} />
+            <Route path="/bookings/:bookingId" element={<ProtectedRoute><BookingDetail /></ProtectedRoute>} />
+            <Route path="/conversations" element={<ProtectedRoute><Conversations /></ProtectedRoute>} />
+            <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+            <Route path="/mitid-sandbox" element={<MitIDSandbox />} />
+            <Route path="/mitid-callback" element={<ProtectedRoute><MitIDCallback /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/helper-dashboard" element={<ProtectedRoute><HelperDashboard /></ProtectedRoute>} />
+            <Route path="/parent-dashboard" element={<ProtectedRoute><ParentDashboard /></ProtectedRoute>} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
+      </BrowserRouter>
+      <Toaster />
+    </ConvexAuthProvider>
   </StrictMode>,
 );
