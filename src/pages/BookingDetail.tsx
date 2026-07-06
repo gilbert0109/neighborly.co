@@ -2,7 +2,6 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -13,18 +12,22 @@ import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import {
   ArrowLeft,
-  Send,
   CheckCircle,
   XCircle,
-  Clock,
-  MapPin,
   Star,
   User,
   MessageSquare,
+  MapPin,
+  Clock,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
-import LiveTracker from "@/components/LiveTracker";
+import { SafeChatInput } from "@/components/safe-chat-input";
+import { BookingTimeline } from "@/components/booking-timeline";
+import { WorkerTrustCard } from "@/components/worker-trust-card";
+import { SafetyBadge, SafetyBadgeGroup } from "@/components/safety-badge";
+import { JobRiskCard } from "@/components/job-risk-card";
+import { SOSButton } from "@/components/sos-button";
 import { STATUS_COLORS, STATUS_LABELS } from "@/lib/constants";
 
 export default function BookingDetail() {
@@ -44,6 +47,7 @@ export default function BookingDetail() {
   const updateStatus = useMutation(api.bookings.updateBookingStatus);
   const sendMessage = useMutation(api.messages.sendMessage);
   const createReview = useMutation(api.reviews.createReview);
+  const createSafetyReport = useMutation(api.admin.createSafetyReport);
   const bookingReview = useQuery(
     api.reviews.getBookingReview,
     bookingId ? { bookingId: bookingId as Id<"bookings"> } : "skip"
@@ -94,14 +98,10 @@ export default function BookingDetail() {
   if (bookingData === null || !("job" in bookingData)) {
     return (
       <DashboardLayout>
-        <Card className="rounded-none border-2 border-foreground max-w-2xl">
+        <Card className="border border-border max-w-2xl">
           <CardContent className="py-12 text-center">
-            <p className="text-lg font-bold">Booking ikke fundet</p>
-            <Button
-              onClick={() => navigate("/bookings")}
-              variant="link"
-              className="mt-2"
-            >
+            <p className="text-lg font-semibold">Booking ikke fundet</p>
+            <Button onClick={() => navigate("/bookings")} variant="link" className="mt-2">
               Tilbage til bookinger
             </Button>
           </CardContent>
@@ -115,9 +115,7 @@ export default function BookingDetail() {
   const isCustomer = user?._id === bookingData.customerId;
   const otherPerson = isHelper ? customer : helper;
 
-  const handleStatusUpdate = async (
-    status: "accepted" | "in_progress" | "completed" | "cancelled"
-  ) => {
+  const handleStatusUpdate = async (status: "accepted" | "in_progress" | "completed" | "cancelled") => {
     try {
       await updateStatus({ bookingId: bookingId as Id<"bookings">, status });
       toast.success(`${STATUS_LABELS[status] || status}`);
@@ -126,19 +124,14 @@ export default function BookingDetail() {
     }
   };
 
-  const handleSendMessage = async () => {
-    if (!chatInput.trim()) return;
-    setIsSending(true);
+  const handleSendMessage = async (content: string) => {
     try {
       await sendMessage({
         bookingId: bookingId as Id<"bookings">,
-        content: chatInput.trim(),
+        content,
       });
-      setChatInput("");
     } catch (e: any) {
-      toast.error(e.message || "Kunne ikke sende besked");
-    } finally {
-      setIsSending(false);
+      throw e;
     }
   };
 
@@ -164,6 +157,24 @@ export default function BookingDetail() {
     }
   };
 
+  const handleSafetyReport = async (type: "safety" | "emergency") => {
+    if (type === "emergency") {
+      window.open("tel:112");
+      return;
+    }
+    try {
+      await createSafetyReport({
+        type: "unsafe_request",
+        description: `Sikkerhedsrapport vedr. booking ${bookingId}`,
+        reportedUserId: otherPerson?._id,
+        bookingId: bookingId as any,
+      });
+      toast.success("Sikkerhedsrapport oprettet");
+    } catch (e: any) {
+      toast.error("Kunne ikke oprette rapport");
+    }
+  };
+
   const canChat =
     bookingData.status !== "cancelled" &&
     bookingData.status !== "completed";
@@ -182,38 +193,42 @@ export default function BookingDetail() {
 
         {/* Booking info */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0px_0px_var(--color-foreground)]">
+          <Card className="border border-border">
             <CardHeader>
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <CardTitle className="text-xl font-black">
+                  <CardTitle className="text-xl font-semibold">
                     {job?.title || "Opgave"}
                   </CardTitle>
                   <div className="flex flex-wrap gap-2 mt-2">
-                    <Badge
-                      className={`rounded-none border border-foreground ${STATUS_COLORS[bookingData.status] || ""}`}
-                    >
+                    <Badge className={`border ${STATUS_COLORS[bookingData.status] || ""}`}>
                       {STATUS_LABELS[bookingData.status] || bookingData.status}
                     </Badge>
-                    <Badge
-                      variant="secondary"
-                      className="rounded-none border border-foreground"
-                    >
+                    <Badge variant="secondary" className="border border-border">
                       {bookingData.paymentStatus}
                     </Badge>
                   </div>
                 </div>
-                <p className="text-2xl font-black shrink-0">
+                <p className="text-2xl font-bold shrink-0">
                   {bookingData.price} kr
                 </p>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Safety badges */}
+              <SafetyBadgeGroup
+                variants={[
+                  ...(customer?.isVerified ? ["customer-verified" as const] : []),
+                  "payment-secured" as const,
+                  ...(job?.category && ["lawn-mowing", "gardening", "dog-walking", "snow-shoveling", "car-washing", "leaf-raking", "outdoor-help", "other-outdoor"].includes(job.category)
+                    ? ["outdoor-only" as const]
+                    : []),
+                ]}
+              />
+
               <div className="grid sm:grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="font-semibold text-xs text-muted-foreground uppercase mb-1">
-                    Planlagt
-                  </p>
+                  <p className="font-semibold text-xs text-muted-foreground uppercase mb-1">Planlagt</p>
                   <p className="flex items-center gap-1">
                     <Clock className="size-3" />
                     {new Date(bookingData.scheduledDate).toLocaleDateString()}
@@ -221,9 +236,7 @@ export default function BookingDetail() {
                 </div>
                 {job?.address && (
                   <div>
-                    <p className="font-semibold text-xs text-muted-foreground uppercase mb-1">
-                      Adresse
-                    </p>
+                    <p className="font-semibold text-xs text-muted-foreground uppercase mb-1">Adresse</p>
                     <p className="flex items-center gap-1">
                       <MapPin className="size-3" />
                       {job.address}
@@ -234,54 +247,32 @@ export default function BookingDetail() {
               </div>
 
               {/* Other person */}
-              <div className="border-t-2 border-foreground/10 pt-4">
-                <p className="text-sm font-bold mb-2 flex items-center gap-2">
+              <div className="border-t border-border/50 pt-4">
+                <p className="text-sm font-semibold mb-2 flex items-center gap-2">
                   <User className="size-4" />
                   {isHelper ? "Kunde" : "Hjælper"}
                 </p>
-                <div className="flex items-center gap-3">
-                  <Avatar className="size-10 rounded-none border-2 border-foreground">
-                    <AvatarFallback className="rounded-none font-bold text-sm">
-                      {otherPerson?.name
-                        ?.split(" ")
-                        .map((n: string) => n[0])
-                        .join("")
-                        .toUpperCase()
-                        .slice(0, 2) || "?"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-bold">
-                      {otherPerson?.name || "Anonym"}
-                    </p>
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                      <Star className="size-3 fill-accent text-accent" />
-                      {otherPerson?.averageRating?.toFixed(1) || "—"}
-                      <span className="text-xs">
-                        ({otherPerson?.totalReviews || 0})
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                <WorkerTrustCard
+                  helper={otherPerson}
+                  compact
+                />
               </div>
 
               {/* Notes */}
               {bookingData.customerNotes && (
-                <div className="border-t-2 border-foreground/10 pt-4">
-                  <p className="text-sm font-bold mb-1">Noter</p>
-                  <p className="text-sm text-muted-foreground">
-                    {bookingData.customerNotes}
-                  </p>
+                <div className="border-t border-border/50 pt-4">
+                  <p className="text-sm font-semibold mb-1">Noter</p>
+                  <p className="text-sm text-muted-foreground">{bookingData.customerNotes}</p>
                 </div>
               )}
 
               {/* Action buttons */}
-              <div className="border-t-2 border-foreground/10 pt-4 flex flex-wrap gap-2">
+              <div className="border-t border-border/50 pt-4 flex flex-wrap gap-2">
                 {isCustomer && bookingData.status === "pending" && (
                   <>
                     <Button
                       onClick={() => handleStatusUpdate("accepted")}
-                      className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)] bg-green-600 hover:bg-green-700"
+                      className="rounded-xl bg-[var(--trust)] hover:bg-[var(--trust)]/90 text-white"
                     >
                       <CheckCircle className="size-4" />
                       Accepter
@@ -289,7 +280,7 @@ export default function BookingDetail() {
                     <Button
                       onClick={() => handleStatusUpdate("cancelled")}
                       variant="outline"
-                      className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)] text-red-600"
+                      className="rounded-xl border-red-300 text-red-600"
                     >
                       <XCircle className="size-4" />
                       Afvis
@@ -299,75 +290,77 @@ export default function BookingDetail() {
                 {isHelper && bookingData.status === "accepted" && (
                   <Button
                     onClick={() => handleStatusUpdate("in_progress")}
-                    className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)]"
+                    className="rounded-xl bg-[var(--safety)] hover:bg-[var(--safety)]/90 text-white"
                   >
                     Start opgave
                   </Button>
                 )}
-                {(isHelper || isCustomer) &&
-                  bookingData.status === "in_progress" && (
-                    <Button
-                      onClick={() => handleStatusUpdate("completed")}
-                      className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)] bg-green-600 hover:bg-green-700"
-                    >
-                      <CheckCircle className="size-4" />
-                      Markér som fuldført
-                    </Button>
-                  )}
-                {(isHelper || isCustomer) &&
-                  bookingData.status === "accepted" && (
-                    <Button
-                      onClick={() => handleStatusUpdate("cancelled")}
-                      variant="outline"
-                      className="rounded-none border-2 border-foreground"
-                    >
-                      <XCircle className="size-4" />
-                      Annuller
-                    </Button>
-                  )}
+                {(isHelper || isCustomer) && bookingData.status === "in_progress" && (
+                  <Button
+                    onClick={() => handleStatusUpdate("completed")}
+                    className="rounded-xl bg-[var(--trust)] hover:bg-[var(--trust)]/90 text-white"
+                  >
+                    <CheckCircle className="size-4" />
+                    Markér som fuldført
+                  </Button>
+                )}
+                {(isHelper || isCustomer) && bookingData.status === "accepted" && (
+                  <Button
+                    onClick={() => handleStatusUpdate("cancelled")}
+                    variant="outline"
+                    className="rounded-xl border-border"
+                  >
+                    <XCircle className="size-4" />
+                    Annuller
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
         </motion.div>
 
-        {/* Live tracking (in_progress bookings) */}
-        <LiveTracker
-          bookingId={bookingId as string}
-          isHelper={isHelper}
-          isInProgress={bookingData.status === "in_progress"}
-          jobAddress={job?.address}
-          jobLocation={job?.location}
-          helperName={helper?.name}
-        />
+        {/* Booking Timeline */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+          <Card className="border border-border">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold flex items-center gap-2">
+                Statusforløb
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <BookingTimeline
+                status={bookingData.status}
+                hasParentApproval={helper?.age !== undefined && helper.age < 18}
+              />
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Job risk card */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }}>
+          <JobRiskCard job={job} customer={customer} helper={helper} />
+        </motion.div>
+
+        {/* SOS */}
+        <div className="flex justify-end">
+          <SOSButton
+            onReport={handleSafetyReport}
+            helperName={helper?.name}
+          />
+        </div>
 
         {/* Review section (completed bookings) */}
         {bookingData.status === "completed" && !bookingReview && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0px_0px_var(--color-foreground)]">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+            <Card className="border border-border">
               <CardHeader>
-                <CardTitle className="text-lg font-black">
-                  Skriv en anmeldelse
-                </CardTitle>
+                <CardTitle className="text-lg font-semibold">Skriv en anmeldelse</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex gap-1">
                   {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      onClick={() => setRating(star)}
-                      className="transition-transform hover:scale-110"
-                    >
-                      <Star
-                        className={`size-7 ${
-                          star <= rating
-                            ? "fill-accent text-accent"
-                            : "text-muted-foreground"
-                        }`}
-                      />
+                    <button key={star} onClick={() => setRating(star)} className="transition-transform hover:scale-110">
+                      <Star className={`size-7 ${star <= rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground"}`} />
                     </button>
                   ))}
                 </div>
@@ -375,13 +368,13 @@ export default function BookingDetail() {
                   value={reviewComment}
                   onChange={(e) => setReviewComment(e.target.value)}
                   placeholder="Hvordan var din oplevelse?"
-                  className="rounded-none border-2 border-foreground"
+                  className="rounded-xl border border-border"
                   rows={3}
                 />
                 <Button
                   onClick={handleReview}
                   disabled={isReviewing}
-                  className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)]"
+                  className="rounded-xl bg-[var(--trust)] hover:bg-[var(--trust)]/90 text-white"
                 >
                   <Star className="size-4" />
                   {isReviewing ? "Sender..." : "Send anmeldelse"}
@@ -392,25 +385,21 @@ export default function BookingDetail() {
         )}
 
         {bookingReview && (
-          <Card className="rounded-none border-2 border-foreground bg-accent/30">
+          <Card className="border border-border bg-[var(--trust)]/5">
             <CardContent className="p-4 text-center text-sm font-medium">
-              <CheckCircle className="size-4 inline mr-1 text-green-600" />
+              <CheckCircle className="size-4 inline mr-1 text-[var(--trust)]" />
               Du har anmeldt denne booking. Tak!
             </CardContent>
           </Card>
         )}
 
-        {/* All reviews for this booking */}
+        {/* All reviews */}
         {bookingReviews && bookingReviews.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.12 }}
-          >
-            <Card className="rounded-none border-2 border-foreground">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>
+            <Card className="border border-border">
               <CardHeader>
-                <CardTitle className="text-lg font-black flex items-center gap-2">
-                  <Star className="size-5 fill-accent text-accent" />
+                <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                  <Star className="size-5 fill-amber-400 text-amber-400" />
                   Anmeldelser ({bookingReviews.length})
                 </CardTitle>
               </CardHeader>
@@ -418,23 +407,15 @@ export default function BookingDetail() {
                 {bookingReviews
                   .filter((r: any) => !bookingReview || r.reviewerId !== user?._id)
                   .map((r: any) => (
-                  <div
-                    key={r._id}
-                    className="border-2 border-foreground/10 p-4"
-                  >
+                  <div key={r._id} className="border border-border/50 p-4 rounded-xl">
                     <div className="flex items-center gap-3 mb-2">
-                      <Avatar className="size-8 rounded-none border-2 border-foreground">
-                        <AvatarFallback className="rounded-none font-bold text-xs">
-                          {r.reviewer?.name
-                            ?.split(" ")
-                            .map((n: string) => n[0])
-                            .join("")
-                            .toUpperCase()
-                            .slice(0, 2) || "?"}
+                      <Avatar className="size-8 rounded-lg border border-border">
+                        <AvatarFallback className="rounded-lg font-bold text-xs bg-muted">
+                          {r.reviewer?.name?.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2) || "?"}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="text-sm font-bold">
+                        <p className="text-sm font-medium">
                           {r.reviewer?.name || "Anonym"}
                           <span className="ml-2 text-xs text-muted-foreground font-normal">
                             {r.role === "customer" ? "Kunde" : "Hjælper"}
@@ -442,14 +423,7 @@ export default function BookingDetail() {
                         </p>
                         <div className="flex gap-0.5 mt-0.5">
                           {[1, 2, 3, 4, 5].map((star) => (
-                            <Star
-                              key={star}
-                              className={`size-3 ${
-                                star <= r.rating
-                                  ? "fill-accent text-accent"
-                                  : "text-muted-foreground/30"
-                              }`}
-                            />
+                            <Star key={star} className={`size-3 ${star <= r.rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`} />
                           ))}
                         </div>
                       </div>
@@ -457,11 +431,7 @@ export default function BookingDetail() {
                         {new Date(r.createdAt).toLocaleDateString("da-DK")}
                       </span>
                     </div>
-                    {r.comment && (
-                      <p className="text-sm text-muted-foreground">
-                        "{r.comment}"
-                      </p>
-                    )}
+                    {r.comment && <p className="text-sm text-muted-foreground">"{r.comment}"</p>}
                   </div>
                 ))}
               </CardContent>
@@ -470,54 +440,38 @@ export default function BookingDetail() {
         )}
 
         {/* Chat */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-        >
-          <Card className="rounded-none border-2 border-foreground">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+          <Card className="border border-border">
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg font-black flex items-center gap-2">
+              <CardTitle className="text-lg font-semibold flex items-center gap-2">
                 <MessageSquare className="size-5" />
                 Beskeder
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {/* Messages list */}
-              <div className="h-64 overflow-y-auto space-y-3 p-2 border-2 border-foreground/10 bg-muted/30">
+              <div className="h-64 overflow-y-auto space-y-3 p-3 border border-border/50 bg-muted/30 rounded-xl">
                 {messages.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-8">
-                    Ingen beskeder endnu. Sig hej!
+                    Ingen beskeder endnu.
                   </p>
                 ) : (
                   messages.map((msg: any) => {
                     const isMine = msg.senderId === user?._id;
                     return (
-                      <div
-                        key={msg._id}
-                        className={`flex ${isMine ? "justify-end" : "justify-start"}`}
-                      >
-                        <div
-                          className={`max-w-[80%] px-3 py-2 border-2 border-foreground ${
-                            isMine
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-card"
-                          }`}
-                        >
+                      <div key={msg._id} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
+                        <div className={`max-w-[80%] px-3 py-2 rounded-xl border ${
+                          isMine
+                            ? "bg-[var(--trust)] text-white border-[var(--trust)]"
+                            : "bg-card border-border"
+                        }`}>
                           {msg.isFiltered ? (
-                            <p className="text-xs italic">
-                              [Besked filtreret af sikkerhedshensyn]
-                            </p>
+                            <p className="text-xs italic opacity-80">[Besked filtreret af sikkerhedshensyn]</p>
                           ) : (
-                            <p className="text-sm whitespace-pre-wrap break-words">
-                              {msg.content}
-                            </p>
+                            <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
                           )}
                           <p className="text-[10px] opacity-50 mt-1">
-                            {new Date(msg.createdAt).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                           </p>
                         </div>
                       </div>
@@ -527,31 +481,9 @@ export default function BookingDetail() {
                 <div ref={chatEndRef} />
               </div>
 
-              {/* Chat input */}
+              {/* Safe chat input */}
               {canChat ? (
-                <div className="flex gap-2">
-                  <Input
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSendMessage();
-                      }
-                    }}
-                    placeholder="Skriv en besked..."
-                    className="flex-1 rounded-none border-2 border-foreground"
-                    disabled={isSending}
-                  />
-                  <Button
-                    onClick={handleSendMessage}
-                    disabled={isSending || !chatInput.trim()}
-                    className="rounded-none border-2 border-foreground shadow-[2px_2px_0px_0px_var(--color-foreground)]"
-                    size="icon"
-                  >
-                    <Send className="size-4" />
-                  </Button>
-                </div>
+                <SafeChatInput onSend={handleSendMessage} placeholder="Skriv en besked..." />
               ) : (
                 <p className="text-sm text-muted-foreground text-center py-2">
                   Chatten er lukket for denne booking.

@@ -153,3 +153,10 @@
   --motion-slow: 0.4s;
   --ease-trust: cubic-bezier(0.19, 1, 0.22, 1);
 }
+
+/* Safety UI animations */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}

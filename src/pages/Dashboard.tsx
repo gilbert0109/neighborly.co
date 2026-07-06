@@ -15,9 +15,12 @@ import {
   ArrowRight,
   Plus,
   MessageCircle,
+  ShieldCheck,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { STATUS_LABELS, JOB_CATEGORY_LABELS } from "@/lib/constants";
+import { SafetyBadgeGroup } from "@/components/safety-badge";
+import { TrustExplainerRow } from "@/components/trust-explainer";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -108,7 +111,7 @@ export default function Dashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08 }}
             >
-              <Card className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)]">
+              <Card className="border border-border shadow-sm">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -116,19 +119,22 @@ export default function Dashboard() {
                     </p>
                     <stat.icon className={`size-4 ${stat.color}`} />
                   </div>
-                  <p className="text-2xl font-black mt-2">{stat.value}</p>
+                  <p className="text-2xl font-bold mt-2">{stat.value}</p>
                 </CardContent>
               </Card>
             </motion.div>
           ))}
         </div>
 
-        {/* Quick actions — one per role. Customers post + manage, helpers browse + book. */}
+        {/* Trust row */}
+        <TrustExplainerRow />
+
+        {/* Quick actions */}
         <div className="flex flex-wrap gap-3">
           {user?.role === "helper" ? (
             <Button
               onClick={() => navigate("/jobs")}
-              className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)] hover:shadow-[1px_1px_0px_0px_var(--color-foreground)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+              className="rounded-xl bg-[var(--trust)] hover:bg-[var(--trust)]/90 text-white shadow-sm"
             >
               <Briefcase className="size-4" />
               Find opgaver
@@ -137,7 +143,7 @@ export default function Dashboard() {
           ) : (
             <Button
               onClick={() => navigate("/jobs/new")}
-              className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)] hover:shadow-[1px_1px_0px_0px_var(--color-foreground)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+              className="rounded-xl bg-[var(--trust)] hover:bg-[var(--trust)]/90 text-white shadow-sm"
             >
               <Plus className="size-4" />
               Opret opgave
@@ -147,7 +153,7 @@ export default function Dashboard() {
           <Button
             onClick={() => navigate("/bookings")}
             variant="outline"
-            className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)] hover:shadow-[1px_1px_0px_0px_var(--color-foreground)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+            className="rounded-xl border-border shadow-sm"
           >
             <CalendarCheck className="size-4" />
             Mine bookinger
@@ -155,7 +161,7 @@ export default function Dashboard() {
           <Button
             onClick={() => navigate("/conversations")}
             variant="secondary"
-            className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)] hover:shadow-[1px_1px_0px_0px_var(--color-foreground)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+            className="rounded-xl border-border shadow-sm"
           >
             <MessageCircle className="size-4" />
             Beskeder
@@ -173,7 +179,7 @@ export default function Dashboard() {
               {activeBookings.slice(0, 3).map((booking: any) => (
                 <Card
                   key={booking._id}
-                  className="rounded-none border-2 border-foreground cursor-pointer hover:shadow-[3px_3px_0px_0px_var(--color-foreground)] hover:-translate-x-[1px] hover:-translate-y-[1px] transition-all"
+                  className="border border-border cursor-pointer hover:shadow-sm hover:-translate-y-[1px] transition-all"
                   onClick={() => navigate(`/bookings/${booking._id}`)}
                 >
                   <CardContent className="p-4 flex items-center justify-between">
@@ -181,15 +187,10 @@ export default function Dashboard() {
                       <p className="font-bold">{booking.job?.title || "Opgave"}</p>
                       <p className="text-sm text-muted-foreground">
                         {booking.job?.description?.slice(0, 80)}
-                        {(booking.job?.description?.length || 0) > 80
-                          ? "..."
-                          : ""}
+                        {(booking.job?.description?.length || 0) > 80 ? "..." : ""}
                       </p>
                     </div>
-                    <Badge
-                      variant="secondary"
-                      className="rounded-none border border-foreground"
-                    >
+                    <Badge variant="secondary" className="border border-border">
                       {STATUS_LABELS[booking.status] || booking.status.replace("_", " ")}
                     </Badge>
                   </CardContent>
@@ -197,11 +198,7 @@ export default function Dashboard() {
               ))}
             </div>
             {activeBookings.length > 3 && (
-              <Button
-                variant="link"
-                onClick={() => navigate("/bookings")}
-                className="mt-2"
-              >
+              <Button variant="link" onClick={() => navigate("/bookings")} className="mt-2">
                 Se alle {activeBookings.length} bookinger
                 <ArrowRight className="size-3" />
               </Button>
@@ -217,7 +214,7 @@ export default function Dashboard() {
               {openJobs.slice(0, 4).map((job: any) => (
                 <Card
                   key={job._id}
-                  className="rounded-none border-2 border-foreground cursor-pointer hover:shadow-[3px_3px_0px_0px_var(--color-foreground)] transition-all"
+                  className="border border-border cursor-pointer hover:shadow-sm transition-all"
                   onClick={() => navigate(`/jobs/${job._id}`)}
                 >
                   <CardContent className="p-4">
@@ -225,18 +222,10 @@ export default function Dashboard() {
                       <div>
                         <p className="font-bold">{job.title}</p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {JOB_CATEGORY_LABELS[job.category] || job.category
-                            ?.split("-")
-                            .map(
-                              (w: string) =>
-                                w.charAt(0).toUpperCase() + w.slice(1)
-                            )
-                            .join(" ")}
+                          {JOB_CATEGORY_LABELS[job.category] || job.category}
                         </p>
                       </div>
-                      <p className="font-black text-lg">
-                        {job.price} kr
-                      </p>
+                      <p className="font-bold text-lg">{job.price} kr</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -249,7 +238,7 @@ export default function Dashboard() {
         {activeBookings.length === 0 &&
           openJobs.length === 0 &&
           completedBookings.length === 0 && (
-            <Card className="rounded-none border-2 border-foreground border-dashed bg-muted/50">
+            <Card className="border border-border border-dashed bg-muted/50">
               <CardContent className="py-12 text-center">
                 <p className="text-lg font-bold text-muted-foreground mb-2">
                   Velkommen til Neighborly!
@@ -262,7 +251,7 @@ export default function Dashboard() {
                 <div className="flex gap-3 justify-center">
                   <Button
                     onClick={() => navigate("/jobs")}
-                    className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)]"
+                    className="rounded-xl bg-[var(--trust)] hover:bg-[var(--trust)]/90 text-white"
                   >
                     Find opgaver
                   </Button>
@@ -270,7 +259,7 @@ export default function Dashboard() {
                     <Button
                       onClick={() => navigate("/jobs/new")}
                       variant="outline"
-                      className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)]"
+                      className="rounded-xl border-border"
                     >
                       Opret opgave
                     </Button>
