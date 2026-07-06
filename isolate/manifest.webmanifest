@@ -1,11 +1,11 @@
 {
-  "name": "freebuff.com application",
-  "short_name": "freebuff.com",
-  "description": "freebuff.com application",
+  "name": "Neighborly — Tryg hjælp fra unge i dit nabolag",
+  "short_name": "Neighborly",
+  "description": "Book verificerede lokale hjælpere til sikre udendørs opgaver — med forældregodkendelse for unge under 18.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "background_color": "#FAFAF7",
+  "theme_color": "#1F7A4D",
   "icons": [
     {
       "src": "/logo.png",
