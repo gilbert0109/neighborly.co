@@ -15,7 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { api, type Id } from "@/convex/_generated/api";
 import { toast } from "sonner";
 import {
   Save,
@@ -31,6 +31,7 @@ import {
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router";
+import { ParentApprovalCard } from "@/components/parent-approval-card";
 
 // Tiny MitID logo for inline use
 function MitIDMark({ className = "size-5" }: { className?: string }) {
@@ -46,21 +47,46 @@ function MitIDMark({ className = "size-5" }: { className?: string }) {
   );
 }
 
+/** Fetches parent approval for a child user and renders ParentApprovalCard */
+function ParentApprovalCardWrapper({ userId }: { userId: Id<"users"> }) {
+  const approval = useQuery(api.parentApprovals.getChildApproval, { childId: userId });
+  const updatePermissions = useMutation(api.parentApprovals.updateParentPermissions);
+
+  if (approval === undefined) {
+    return (
+      <Card className="border border-border shadow-sm">
+        <CardContent className="p-4">
+          <Skeleton className="h-24" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <ParentApprovalCard
+      approval={approval ? {
+        childName: approval.childName,
+        allowedCategories: approval.allowedCategories || [],
+        maxDistanceKm: approval.maxDistanceKm || 5,
+        allowedStartTime: approval.allowedStartTime || "08:00",
+        allowedEndTime: approval.allowedEndTime || "18:00",
+        perJobApproval: approval.perJobApproval || false,
+        approved: approval.approved || false,
+        paused: approval.paused,
+        revokedAt: approval.revokedAt,
+        emergencyContactPhone: approval.emergencyContactPhone,
+      } : null}
+    />
+  );
+}
+
 export default function Profile() {
   const { user, signOut } = useAuth();
   const updateProfile = useMutation(api.users.updateProfile);
   const setRole = useMutation(api.users.setRole);
   const startMitID = useMutation(api.mitid.startMitIDVerification);
   const revokeMitID = useMutation(api.mitid.revokeMitIDVerification);
-  // Sandbox mode is detected from the authorize URL returned by
-  // `startMitIDVerification` (sandbox URLs start with /mitid-sandbox,
-  // production URLs are absolute broker URLs). We intentionally do NOT
-  // call a separate `getMitIDStatus` query here — the backend function
-  // may not be deployed yet, and a missing function on /profile would
-  // crash the entire page before the user can use anything else.
-  const [mitIDReturnUrl, setMitIDReturnUrl] = useState<string | null>(
-    null,
-  );
+  const [mitIDReturnUrl, setMitIDReturnUrl] = useState<string | null>(null);
   const setAvailability = useMutation(api.availability.setAvailability);
   const availability = useQuery(api.availability.getMyAvailability);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -112,12 +138,7 @@ export default function Profile() {
   }, [availability, availInitialized]);
 
   const initials = user?.name
-    ? user.name
-        .split(" ")
-        .map((n: string) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2)
+    ? user.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)
     : "?";
 
   const handleSave = async () => {
@@ -131,11 +152,9 @@ export default function Profile() {
         address: address || undefined,
         city: city || undefined,
       });
-
       if (role && role !== user?.role) {
         await setRole({ role: role as any });
       }
-
       toast.success("Profil opdateret!");
     } catch (e: any) {
       toast.error(e.message || "Kunne ikke opdatere profil");
@@ -149,7 +168,6 @@ export default function Profile() {
     try {
       const { url } = await startMitID({ origin: window.location.origin });
       setMitIDReturnUrl(url);
-      // Hard navigation — the MitID broker is a separate origin/device.
       window.location.href = url;
     } catch (e: any) {
       toast.error(
@@ -162,9 +180,7 @@ export default function Profile() {
   };
 
   const handleRevokeMitID = async () => {
-    if (!window.confirm("Er du sikker på, at du vil frakoble MitID fra din konto?")) {
-      return;
-    }
+    if (!window.confirm("Er du sikker på, at du vil frakoble MitID fra din konto?")) return;
     setIsRevokingMitID(true);
     try {
       await revokeMitID();
@@ -217,47 +233,35 @@ export default function Profile() {
     <DashboardLayout>
       <div className="max-w-2xl space-y-6">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-black">Profil</h2>
-          <p className="text-muted-foreground mt-1">
-            Administrer din konto og indstillinger
-          </p>
+          <h2 className="text-2xl sm:text-3xl font-bold">Profil</h2>
+          <p className="text-muted-foreground mt-1">Administrer din konto og indstillinger</p>
         </div>
 
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
           {/* Avatar card */}
-          <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0px_0px_var(--color-foreground)] mb-6">
+          <Card className="border border-border shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
-                <Avatar className="size-16 rounded-none border-2 border-foreground">
-                  <AvatarFallback className="rounded-none text-xl font-black">
-                    {initials}
-                  </AvatarFallback>
+                <Avatar className="size-16 rounded-xl border border-border">
+                  <AvatarFallback className="rounded-xl text-xl font-bold bg-muted">{initials}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="text-xl font-black">
-                    {user?.name || "Angiv dit navn"}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {user?.email || "Ingen e-mail angivet"}
-                  </p>
+                  <p className="text-xl font-bold">{user?.name || "Angiv dit navn"}</p>
+                  <p className="text-sm text-muted-foreground">{user?.email || "Ingen e-mail angivet"}</p>
                   <div className="flex items-center gap-2 mt-2">
-                    <Badge className="rounded-none border border-foreground">
+                    <Badge className="border border-border">
                       {user?.role === "customer" ? "Kunde" : user?.role === "helper" ? "Hjælper" : user?.role || "Ingen rolle"}
                     </Badge>
                     {user?.isVerified ? (
-                      <Badge className="rounded-none border border-foreground bg-green-100 text-green-800">
-                        <CheckCircle className="size-3" />
-                        Verificeret
+                      <Badge className="border border-[var(--trust)]/30 bg-[var(--trust)]/10 text-[var(--trust)]">
+                        <CheckCircle className="size-3" /> Verificeret
                       </Badge>
                     ) : user?.verificationStatus === "pending" ? (
-                      <Badge className="rounded-none border border-foreground bg-amber-100 text-amber-800">
-                        <Clock className="size-3" />
-                        Afventer
+                      <Badge className="border border-amber-300 bg-amber-50 text-amber-700">
+                        <Clock className="size-3" /> Afventer
                       </Badge>
                     ) : (
-                      <Badge className="rounded-none border border-foreground bg-muted text-muted-foreground">
-                        Ikke verificeret
-                      </Badge>
+                      <Badge variant="outline" className="border-border text-muted-foreground">Ikke verificeret</Badge>
                     )}
                   </div>
                 </div>
@@ -266,192 +270,105 @@ export default function Profile() {
           </Card>
 
           {/* Edit form */}
-          <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0px_0px_var(--color-foreground)]">
+          <Card className="border border-border shadow-sm">
             <CardHeader>
-              <CardTitle className="text-lg font-black">
-                Rediger profil
-              </CardTitle>
+              <CardTitle className="text-lg font-bold">Rediger profil</CardTitle>
             </CardHeader>
             <CardContent className="space-y-5">
-              {/* Name */}
               <div>
-                <label className="text-sm font-bold block mb-1">
-                  Fulde navn
-                </label>
-                <Input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Dit navn"
-                  className="rounded-none border-2 border-foreground"
-                />
+                <label className="text-sm font-semibold block mb-1.5">Fulde navn</label>
+                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Dit navn" className="rounded-xl border border-border" />
               </div>
-
-              {/* Role */}
               <div>
-                <label className="text-sm font-bold block mb-1">
-                  Rolle
-                </label>
+                <label className="text-sm font-semibold block mb-1.5">Rolle</label>
                 <Select value={role} onValueChange={setRoleState}>
-                  <SelectTrigger className="w-full rounded-none border-2 border-foreground">
+                  <SelectTrigger className="w-full rounded-xl border border-border">
                     <SelectValue placeholder="Vælg din rolle" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="customer">
-                      Kunde — Jeg har brug for hjælp til opgaver
-                    </SelectItem>
-                    <SelectItem value="helper">
-                      Hjælper — Jeg vil udføre opgaver for naboer
-                    </SelectItem>
+                    <SelectItem value="customer">Kunde — Jeg har brug for hjælp til opgaver</SelectItem>
+                    <SelectItem value="helper">Hjælper — Jeg vil udføre opgaver for naboer</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-bold block mb-1">Alder</label>
-                  <Input
-                    type="number"
-                    value={age}
-                    onChange={(e) => setAge(e.target.value)}
-                    placeholder="25"
-                    className="rounded-none border-2 border-foreground"
-                    min="13"
-                    max="120"
-                  />
+                  <label className="text-sm font-semibold block mb-1.5">Alder</label>
+                  <Input type="number" value={age} onChange={(e) => setAge(e.target.value)} placeholder="25" className="rounded-xl border border-border" min="13" max="120" />
                 </div>
                 <div>
-                  <label className="text-sm font-bold block mb-1">Telefon</label>
-                  <Input
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+45 ..."
-                    className="rounded-none border-2 border-foreground"
-                  />
+                  <label className="text-sm font-semibold block mb-1.5">Telefon</label>
+                  <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+45 ..." className="rounded-xl border border-border" />
                 </div>
               </div>
-
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-bold block mb-1">
-                    Adresse
-                  </label>
-                  <Input
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    placeholder="Nørrebrogade 12"
-                    className="rounded-none border-2 border-foreground"
-                  />
+                  <label className="text-sm font-semibold block mb-1.5">Adresse</label>
+                  <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Nørrebrogade 12" className="rounded-xl border border-border" />
                 </div>
                 <div>
-                  <label className="text-sm font-bold block mb-1">By</label>
-                  <Input
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    placeholder="København"
-                    className="rounded-none border-2 border-foreground"
-                  />
+                  <label className="text-sm font-semibold block mb-1.5">By</label>
+                  <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="København" className="rounded-xl border border-border" />
                 </div>
               </div>
-
               <div>
-                <label className="text-sm font-bold block mb-1">Bio</label>
-                <Textarea
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  placeholder="Fortæl naboerne lidt om dig selv..."
-                  className="rounded-none border-2 border-foreground"
-                  rows={3}
-                />
+                <label className="text-sm font-semibold block mb-1.5">Bio</label>
+                <Textarea value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Fortæl naboerne lidt om dig selv..." className="rounded-xl border border-border" rows={3} />
               </div>
-
-              <Button
-                onClick={handleSave}
-                disabled={isSaving}
-                className="w-full rounded-none border-2 border-foreground shadow-[4px_4px_0px_0px_var(--color-foreground)] hover:shadow-[2px_2px_0px_0px_var(--color-foreground)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-              >
-                <Save className="size-4" />
-                {isSaving ? "Gemmer..." : "Gem profil"}
+              <Button onClick={handleSave} disabled={isSaving} className="w-full rounded-xl bg-[var(--trust)] text-white hover:bg-[var(--trust)]/90 shadow-sm">
+                <Save className="size-4" /> {isSaving ? "Gemmer..." : "Gem profil"}
               </Button>
             </CardContent>
           </Card>
 
           {/* MitID verification */}
           {user?.isVerified && user?.mitidVerifiedAt ? (
-            <Card className="rounded-none border-2 border-[#c8102e] shadow-[4px_4px_0px_0px_var(--color-foreground)]">
-              <CardHeader>
-                <CardTitle className="text-lg font-black flex items-center gap-2">
-                  <div className="size-7 bg-[#c8102e] flex items-center justify-center">
+            <Card className="border border-[var(--safety)]/30 shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-bold flex items-center gap-2">
+                  <div className="size-7 bg-[var(--safety)] rounded-lg flex items-center justify-center">
                     <MitIDMark className="size-4 text-white" />
                   </div>
                   Verificeret med MitID
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center gap-3 p-3 bg-green-50 border-2 border-green-600">
-                  <CheckCircle className="size-5 text-green-700 shrink-0" />
+                <div className="flex items-center gap-3 p-3 bg-[var(--trust)]/10 border border-[var(--trust)]/30 rounded-xl">
+                  <CheckCircle className="size-5 text-[var(--trust)] shrink-0" />
                   <div>
-                    <p className="font-bold text-green-900">
+                    <p className="font-semibold text-[var(--trust)]">
                       Identitet bekræftet via MitID
                       {user.mitidAssuranceLevel === "high" && (
-                        <span className="ml-2 text-xs bg-green-700 text-white px-1.5 py-0.5 border border-green-900">
-                          Høj tillid
-                        </span>
+                        <span className="ml-2 text-xs bg-[var(--trust)] text-white px-1.5 py-0.5 rounded">Høj tillid</span>
                       )}
                     </p>
-                    <p className="text-xs text-green-800">
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       {user.mitidName && <>Verificeret som {user.mitidName} · </>}
-                      Bekræftet den{" "}
-                      {new Date(user.mitidVerifiedAt).toLocaleDateString("da-DK", {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      })}
+                      Bekræftet den {new Date(user.mitidVerifiedAt).toLocaleDateString("da-DK", { day: "numeric", month: "long", year: "numeric" })}
                     </p>
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-3">
-                  Dit MitID er knyttet til denne konto. Det øger tilliden blandt
-                  naboer og gør det nemmere at samarbejde i nabolaget.
-                </p>
-                <Button
-                  variant="ghost"
-                  onClick={handleRevokeMitID}
-                  disabled={isRevokingMitID}
-                  className="text-xs text-muted-foreground h-auto p-0 mt-2 hover:bg-transparent"
-                >
+                <p className="text-xs text-muted-foreground mt-3">Dit MitID er knyttet til denne konto. Det øger tilliden blandt naboer.</p>
+                <Button variant="ghost" onClick={handleRevokeMitID} disabled={isRevokingMitID} className="text-xs text-muted-foreground h-auto p-0 mt-2 hover:bg-transparent">
                   {isRevokingMitID ? "Frakobler..." : "Frakobl MitID og verificér igen"}
                 </Button>
               </CardContent>
             </Card>
           ) : (
-            <Card className="rounded-none border-2 border-foreground shadow-[4px_4px_0px_0px_var(--color-foreground)]">
-              <CardHeader>
-                <CardTitle className="text-lg font-black flex items-center gap-2">
-                  <Shield className="size-5" />
+            <Card className="border border-border shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-bold flex items-center gap-2">
+                  <Shield className="size-5 text-[var(--safety)]" />
                   Bliv verificeret med MitID
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  Verificér din identitet med MitID — Danmarks officielle
-                  digitale ID. Det tager 30 sekunder og skaber tillid blandt
-                  naboer.
-                </p>
-                <Button
-                  onClick={handleStartMitID}
-                  disabled={isStartingMitID}
-                  className="w-full h-12 rounded-none bg-[#c8102e] hover:bg-[#a50d24] text-white font-bold shadow-[0_4px_0_0_#7a0a1a] hover:shadow-[0_2px_0_0_#7a0a1a] hover:translate-y-[2px] transition-all"
-                >
+                <p className="text-sm text-muted-foreground">Verificér din identitet med MitID — Danmarks officielle digitale ID.</p>
+                <Button onClick={handleStartMitID} disabled={isStartingMitID} className="w-full h-12 rounded-xl bg-[var(--safety)] hover:bg-[var(--safety)]/90 text-white shadow-sm">
                   {isStartingMitID ? (
-                    <>
-                      <Loader2 className="size-4 animate-spin" />
-                      Forbinder til MitID...
-                    </>
+                    <><Loader2 className="size-4 animate-spin" /> Forbinder til MitID...</>
                   ) : (
-                    <>
-                      <MitIDMark className="size-5 text-white" />
-                      Verificér med MitID
-                    </>
+                    <><MitIDMark className="size-5 text-white" /> Verificér med MitID</>
                   )}
                 </Button>
                 <p className="text-xs text-muted-foreground text-center">
@@ -459,47 +376,38 @@ export default function Profile() {
                     ? "Du videresendes til Neighborlys MitID-testmiljø (sandbox)."
                     : "Du videresendes til NemLog-in / din MitID-broker."}
                 </p>
-                <p className="text-[11px] text-muted-foreground text-center">
-                  MitID er udbudt af Digitaliseringsstyrelsen. Vi ser kun dit navn
-                  og et unikt ID — aldrig din adgangskode.
-                </p>
+                <p className="text-[11px] text-muted-foreground text-center">MitID er udbudt af Digitaliseringsstyrelsen. Vi ser kun dit navn og et unikt ID.</p>
               </CardContent>
             </Card>
           )}
 
+          {/* Parent Approval (for minors under 18) */}
+          {user?.age !== undefined && user.age < 18 && (
+            <ParentApprovalCardWrapper userId={user._id as Id<"users">} />
+          )}
+
           {/* Stats */}
-          {(user?.averageRating !== undefined ||
-            user?.totalReviews !== undefined) && (
-            <Card className="rounded-none border-2 border-foreground">
-              <CardHeader>
-                <CardTitle className="text-lg font-black">Statistik</CardTitle>
+          {(user?.averageRating !== undefined || user?.totalReviews !== undefined) && (
+            <Card className="border border-border shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-bold">Statistik</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-3 gap-4">
                   <div className="text-center">
-                    <div className="flex items-center justify-center gap-1 text-xl font-black">
-                      <Star className="size-4 fill-accent text-accent" />
+                    <div className="flex items-center justify-center gap-1 text-xl font-bold">
+                      <Star className="size-4 fill-amber-400 text-amber-400" />
                       {user.averageRating?.toFixed(1) || "—"}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Bedømmelse
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">Bedømmelse</p>
                   </div>
                   <div className="text-center">
-                    <div className="text-xl font-black">
-                      {user.totalReviews || 0}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Anmeldelser
-                    </p>
+                    <div className="text-xl font-bold">{user.totalReviews || 0}</div>
+                    <p className="text-xs text-muted-foreground mt-1">Anmeldelser</p>
                   </div>
                   <div className="text-center">
-                    <div className="text-xl font-black">
-                      {user.completedJobs || 0}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Udførte opgaver
-                    </p>
+                    <div className="text-xl font-bold">{user.completedJobs || 0}</div>
+                    <p className="text-xs text-muted-foreground mt-1">Udførte opgaver</p>
                   </div>
                 </div>
               </CardContent>
@@ -508,64 +416,37 @@ export default function Profile() {
 
           {/* Reviews list */}
           {reviews && reviews.length > 0 && (
-            <Card className="rounded-none border-2 border-foreground">
-              <CardHeader>
-                <CardTitle className="text-lg font-black flex items-center gap-2">
-                  <Star className="size-5 fill-accent text-accent" />
+            <Card className="border border-border shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-bold flex items-center gap-2">
+                  <Star className="size-5 fill-amber-400 text-amber-400" />
                   Anmeldelser af dig
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {reviews.map((r: any) => (
-                  <div
-                    key={r._id}
-                    className="border-2 border-foreground/10 p-4"
-                  >
+                  <div key={r._id} className="border border-border/50 p-4 rounded-xl">
                     <div className="flex items-center gap-3 mb-2">
-                      <Avatar className="size-8 rounded-none border-2 border-foreground">
-                        <AvatarFallback className="rounded-none font-bold text-xs">
-                          {r.reviewer?.name
-                            ?.split(" ")
-                            .map((n: string) => n[0])
-                            .join("")
-                            .toUpperCase()
-                            .slice(0, 2) || "?"}
+                      <Avatar className="size-8 rounded-lg border border-border">
+                        <AvatarFallback className="rounded-lg font-bold text-xs bg-muted">
+                          {r.reviewer?.name?.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2) || "?"}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="text-sm font-bold">
+                        <p className="text-sm font-medium">
                           {r.reviewer?.name || "Anonym"}
-                          <span className="ml-2 text-xs text-muted-foreground font-normal">
-                            {r.role === "customer" ? "Kunde" : "Hjælper"}
-                          </span>
+                          <span className="ml-2 text-xs text-muted-foreground font-normal">{r.role === "customer" ? "Kunde" : "Hjælper"}</span>
                         </p>
                         <div className="flex gap-0.5 mt-0.5">
                           {[1, 2, 3, 4, 5].map((star) => (
-                            <Star
-                              key={star}
-                              className={`size-3 ${
-                                star <= r.rating
-                                  ? "fill-accent text-accent"
-                                  : "text-muted-foreground/30"
-                              }`}
-                            />
+                            <Star key={star} className={`size-3 ${star <= r.rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`} />
                           ))}
                         </div>
                       </div>
-                      <span className="ml-auto text-xs text-muted-foreground">
-                        {new Date(r.createdAt).toLocaleDateString("da-DK")}
-                      </span>
+                      <span className="ml-auto text-xs text-muted-foreground">{new Date(r.createdAt).toLocaleDateString("da-DK")}</span>
                     </div>
-                    {r.comment && (
-                      <p className="text-sm text-muted-foreground">
-                        "{r.comment}"
-                      </p>
-                    )}
-                    {r.jobTitle && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Opgave: {r.jobTitle}
-                      </p>
-                    )}
+                    {r.comment && <p className="text-sm text-muted-foreground">"{r.comment}"</p>}
+                    {r.jobTitle && <p className="text-xs text-muted-foreground mt-1">Opgave: {r.jobTitle}</p>}
                   </div>
                 ))}
               </CardContent>
@@ -574,64 +455,37 @@ export default function Profile() {
 
           {/* Helper Availability */}
           {role === "helper" && (
-            <Card className="rounded-none border-2 border-foreground">
-              <CardHeader>
-                <CardTitle className="text-lg font-black flex items-center gap-2">
+            <Card className="border border-border shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-bold flex items-center gap-2">
                   <Calendar className="size-5" />
                   Ugentlig tilgængelighed
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <p className="text-sm text-muted-foreground">
-                  Vælg de dage og tidspunkter, du er tilgængelig for at hjælpe naboer.
-                </p>
+                <p className="text-sm text-muted-foreground">Vælg de dage og tidspunkter, du er tilgængelig for at hjælpe naboer.</p>
                 {daysOfWeek.map((day, i) => {
                   const entry = availEntries.find((e) => e.dayOfWeek === i);
                   const isActive = !!entry;
                   return (
                     <div key={day} className="flex items-center gap-3">
-                      <button
-                        onClick={() => toggleDay(i)}
-                        className={`w-12 h-10 text-xs font-bold border-2 border-foreground transition-colors ${
-                          isActive
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-background hover:bg-accent"
-                        }`}
-                      >
+                      <button onClick={() => toggleDay(i)} className={`w-12 h-10 text-xs font-bold border border-border rounded-lg transition-colors ${isActive ? "bg-[var(--trust)] text-white" : "bg-background hover:bg-accent"}`}>
                         {day}
                       </button>
                       {isActive ? (
                         <div className="flex items-center gap-2 flex-1">
-                          <Input
-                            type="time"
-                            value={entry.startTime}
-                            onChange={(e) => updateTime(i, "startTime", e.target.value)}
-                            className="rounded-none border-2 border-foreground w-32"
-                          />
+                          <Input type="time" value={entry.startTime} onChange={(e) => updateTime(i, "startTime", e.target.value)} className="rounded-lg border border-border w-32" />
                           <span className="text-sm font-bold">–</span>
-                          <Input
-                            type="time"
-                            value={entry.endTime}
-                            onChange={(e) => updateTime(i, "endTime", e.target.value)}
-                            className="rounded-none border-2 border-foreground w-32"
-                          />
+                          <Input type="time" value={entry.endTime} onChange={(e) => updateTime(i, "endTime", e.target.value)} className="rounded-lg border border-border w-32" />
                         </div>
                       ) : (
-                        <span className="text-xs text-muted-foreground flex-1">
-                          Ikke tilgængelig
-                        </span>
+                        <span className="text-xs text-muted-foreground flex-1">Ikke tilgængelig</span>
                       )}
                     </div>
                   );
                 })}
-                <Button
-                  onClick={handleSaveAvailability}
-                  disabled={isSavingAvail}
-                  className="rounded-none border-2 border-foreground shadow-[3px_3px_0px_0px_var(--color-foreground)]"
-                  variant="outline"
-                >
-                  <Save className="size-4" />
-                  {isSavingAvail ? "Gemmer..." : "Gem tilgængelighed"}
+                <Button onClick={handleSaveAvailability} disabled={isSavingAvail} className="rounded-xl border-border" variant="outline">
+                  <Save className="size-4" /> {isSavingAvail ? "Gemmer..." : "Gem tilgængelighed"}
                 </Button>
               </CardContent>
             </Card>
@@ -639,15 +493,10 @@ export default function Profile() {
 
           {/* Anonymous warning */}
           {user?.isAnonymous && (
-            <Card className="rounded-none border-2 border-foreground border-dashed bg-amber-50">
+            <Card className="border border-dashed border-amber-300 bg-amber-50/50">
               <CardContent className="p-4 text-sm">
-                <p className="font-bold text-amber-800 mb-1">
-                  Gæstekonto
-                </p>
-                <p className="text-amber-700">
-                  Du er logget ind som gæst. Opsæt din e-mail og profil for at
-                  låse op for alle funktioner og holde din konto sikker.
-                </p>
+                <p className="font-semibold text-amber-800 mb-1">Gæstekonto</p>
+                <p className="text-amber-700">Du er logget ind som gæst. Opsæt din e-mail og profil for at låse op for alle funktioner.</p>
               </CardContent>
             </Card>
           )}

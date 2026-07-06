@@ -19,6 +19,8 @@ import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { JOB_CATEGORIES } from "@/lib/constants";
 import { useAuth } from "@/hooks/use-auth";
+import { CustomerVerificationGate } from "@/components/customer-verification-gate";
+import type { ChecklistItem } from "@/components/verification-checklist";
 
 export default function PostJob() {
   const navigate = useNavigate();
@@ -32,6 +34,15 @@ export default function PostJob() {
   const [city, setCity] = useState("");
   const [scheduledDate, setScheduledDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Verification gate items
+  const verificationItems: ChecklistItem[] = [
+    { key: "name", label: "Fulde navn", completed: !!user?.name },
+    { key: "role", label: "Vælg rolle som kunde", completed: user?.role === "customer" },
+    { key: "mitid", label: "MitID-verifikation", completed: !!user?.isVerified },
+    { key: "email", label: "E-mail bekræftet", completed: !!user?.email && !user?.isAnonymous },
+  ];
+  const allVerified = verificationItems.every((i) => i.completed);
 
   // Helpers can only solve work, not post it. The effect kicks the redirect
   // but it would briefly flash the form on first paint, so we also gate
@@ -103,6 +114,16 @@ export default function PostJob() {
         </button>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          {/* Verification gate — show before form if not verified */}
+          {!allVerified && (
+            <CustomerVerificationGate
+              action="oprette en opgave"
+              items={verificationItems}
+              onContinue={() => navigate("/profile")}
+              className="mb-6"
+            />
+          )}
+
           <Card className="rounded-2xl border border-border shadow-sm">
             <CardHeader>
               <CardTitle className="text-2xl font-bold">
@@ -113,6 +134,132 @@ export default function PostJob() {
               </p>
             </CardHeader>
             <CardContent>
+              {/* Disable form if not verified */}
+              <div className={!allVerified ? "pointer-events-none opacity-50" : ""}>
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  {/* Title */}
+                  <div>
+                    <label className="text-sm font-semibold block mb-1.5">
+                      Opgavetitel <span className="text-destructive">*</span>
+                    </label>
+                    <Input
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder='F.eks. "Slå min græsplæne"'
+                      className="rounded-xl border border-border"
+                      required
+                    />
+                  </div>
+
+                  {/* Category */}
+                  <div>
+                    <label className="text-sm font-semibold block mb-1.5">
+                      Kategori <span className="text-destructive">*</span>
+                    </label>
+                    <Select value={category} onValueChange={setCategory}>
+                      <SelectTrigger className="w-full rounded-xl border border-border">
+                        <SelectValue placeholder="Vælg en kategori" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {JOB_CATEGORIES.map((cat) => (
+                          <SelectItem key={cat.value} value={cat.value}>
+                            {cat.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Description */}
+                  <div>
+                    <label className="text-sm font-semibold block mb-1.5">
+                      Beskrivelse <span className="text-destructive">*</span>
+                    </label>
+                    <Textarea
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Beskriv opgaven i detaljer. Størrelse, varighed, særlige forhold..."
+                      className="rounded-xl border border-border"
+                      rows={4}
+                      required
+                    />
+                  </div>
+
+                  {/* Price & Address row */}
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-semibold block mb-1.5">
+                        Pris (DKK) <span className="text-destructive">*</span>
+                      </label>
+                      <Input
+                        type="number"
+                        value={price}
+                        onChange={(e) => setPrice(e.target.value)}
+                        placeholder="200"
+                        className="rounded-xl border border-border"
+                        min="10"
+                        step="10"
+                        required
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Vejledende: 100-500 kr afhængigt af opgaven
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-semibold block mb-1.5">
+                        Planlagt dato
+                      </label>
+                      <Input
+                        type="date"
+                        value={scheduledDate}
+                        onChange={(e) => setScheduledDate(e.target.value)}
+                        className="rounded-xl border border-border"
+                        min={new Date().toISOString().split("T")[0]}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Lad være tom for fleksibel timing
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Address row */}
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-semibold block mb-1.5">
+                        Adresse <span className="text-destructive">*</span>
+                      </label>
+                      <Input
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        placeholder="Nørrebrogade 12"
+                        className="rounded-xl border border-border"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-semibold block mb-1.5">
+                        By
+                      </label>
+                      <Input
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                        placeholder="København"
+                        className="rounded-xl border border-border"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Submit */}
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting || !allVerified}
+                    className="w-full rounded-xl bg-[var(--trust)] text-white hover:bg-[var(--trust)]/90 shadow-sm transition-all"
+                  >
+                    <Send className="size-4 mr-2" />
+                    {isSubmitting ? "Opretter..." : "Opret opgave"}
+                  </Button>
+                </form>
+              </div>
               <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Title */}
                 <div>
