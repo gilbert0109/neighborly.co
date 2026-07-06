@@ -27,6 +27,8 @@ const MitIDSandbox = lazy(() => import("./pages/MitIDSandbox.tsx"));
 const MitIDCallback = lazy(() => import("./pages/MitIDCallback.tsx"));
 const Profile = lazy(() => import("./pages/Profile.tsx"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard.tsx"));
+const HelperDashboard = lazy(() => import("./pages/HelperDashboard.tsx"));
+const ParentDashboard = lazy(() => import("./pages/ParentDashboard.tsx"));
 
 // Simple loading fallback for route transitions
 function RouteLoading() {
@@ -88,6 +90,8 @@ createRoot(document.getElementById("root")!).render(
               <Route path="/mitid-callback" element={<ProtectedRoute><MitIDCallback /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+              <Route path="/helper-dashboard" element={<ProtectedRoute><HelperDashboard /></ProtectedRoute>} />
+              <Route path="/parent-dashboard" element={<ProtectedRoute><ParentDashboard /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

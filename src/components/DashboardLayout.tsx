@@ -30,7 +30,7 @@ const allNavItems = {
     { path: "/profile", label: "Profil", icon: User },
   ],
   helper: [
-    { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { path: "/helper-dashboard", label: "Dashboard", icon: LayoutDashboard },
     { path: "/jobs", label: "Find opgaver", icon: Briefcase },
     { path: "/bookings", label: "Bookinger", icon: ClipboardList },
     { path: "/conversations", label: "Beskeder", icon: MessageSquare },
@@ -42,6 +42,24 @@ const allNavItems = {
     { path: "/profile", label: "Profil", icon: User },
   ],
 } as const;
+
+function getNavItems(user: any) {
+  if (user?.role === "admin") return allNavItems.admin;
+  if (user?.role === "helper") return allNavItems.helper;
+  // customer or no role
+  const age = user?.age;
+  const isMinor = age !== undefined && age < 18;
+  if (isMinor) {
+    return [
+      { path: "/parent-dashboard", label: "Dashboard", icon: LayoutDashboard },
+      { path: "/jobs", label: "Find opgaver", icon: Briefcase },
+      { path: "/bookings", label: "Bookinger", icon: ClipboardList },
+      { path: "/conversations", label: "Beskeder", icon: MessageSquare },
+      { path: "/profile", label: "Profil", icon: User },
+    ];
+  }
+  return allNavItems.customer;
+}
 
 function matchCurrentPath(
   pathname: string,
@@ -65,12 +83,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   // Pick role-appropriate nav. Users without a role fall back to "customer"
   // (the safer default — they shouldn't see "Find opgaver" CTAs before
   // they're committed to being a helper).
-  const navItems =
-    user?.role === "admin"
-      ? allNavItems.admin
-      : user?.role === "helper"
-        ? allNavItems.helper
-        : allNavItems.customer;
+  const navItems = getNavItems(user);
 
   const handleSignOut = async () => {
     try {
