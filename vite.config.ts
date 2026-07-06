@@ -6,6 +6,8 @@ import { defineConfig } from "vite";
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Set GITHUB_PAGES_BASE="/<repo-navn>/" for GitHub Pages deployment
+  base: process.env.GITHUB_PAGES_BASE || "/",
   plugins: [vlyPlugin(), react(), tailwindcss()],
   resolve: {
     alias: {
