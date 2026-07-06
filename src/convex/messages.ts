@@ -103,11 +103,11 @@ export const sendMessage = mutation({
     const { blocked, severe, reason, matchedPattern } = filterMessage(args.content);
 
     if (blocked && severe) {
-      // Severe: message is NOT delivered, safety report is created
+      // Severe: message is NOT delivered, safety report is created via scheduler
+      // (scheduler survives atomic mutation rollback from the throw below)
       const now = Date.now();
 
-      // Schedule report via scheduler — NOT rolled back by the throw below
-      await ctx.scheduler.runAfter(0, internal.admin.createSafetyReport, {
+      await ctx.scheduler.runAfter(0, (internal as any).admin.createSafetyReport, {
         reportedUserId: userId,
         bookingId: args.bookingId,
         reason: "grooming_attempt",

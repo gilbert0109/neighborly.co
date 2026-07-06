@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation } from "convex/react";
-import { api, type Id } from "@/convex/_generated/api";
+import { api } from "@/convex/_generated/api";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -87,7 +87,7 @@ export default function ParentDashboard() {
     setIsSaving(true);
     try {
       await updatePermissions({
-        childId: user._id as Id<"users">,
+        childId: user._id as any,
         allowedCategories: editCategories.length > 0 ? editCategories as any : undefined,
         maxDistanceKm: parseInt(editMaxDistance) || 5,
         allowedStartTime: editStartTime,
@@ -105,7 +105,7 @@ export default function ParentDashboard() {
   const handlePause = async () => {
     try {
       await updatePermissions({
-        childId: user?._id as Id<"users">,
+        childId: user?._id as any,
         paused: true,
       });
       toast.success("Godkendelse sat på pause");
@@ -117,7 +117,7 @@ export default function ParentDashboard() {
   const handleResume = async () => {
     try {
       await updatePermissions({
-        childId: user?._id as Id<"users">,
+        childId: user?._id as any,
         paused: false,
       });
       toast.success("Godkendelse genoptaget");
@@ -129,7 +129,7 @@ export default function ParentDashboard() {
   const handleRevoke = async () => {
     if (!window.confirm("Er du sikker på at du vil tilbagekalde forældregodkendelsen?")) return;
     try {
-      await revokeApproval({ childId: user?._id as Id<"users"> });
+      await revokeApproval({ childId: user?._id as any });
       toast.success("Godkendelse tilbagekaldt");
     } catch (e: any) {
       toast.error(e.message || "Kunne ikke tilbagekalde");

@@ -15,7 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery } from "convex/react";
-import { api, type Id } from "@/convex/_generated/api";
+import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 import {
   Save,
@@ -48,9 +48,10 @@ function MitIDMark({ className = "size-5" }: { className?: string }) {
 }
 
 /** Fetches parent approval for a child user and renders ParentApprovalCard */
-function ParentApprovalCardWrapper({ userId }: { userId: Id<"users"> }) {
+function ParentApprovalCardWrapper({ userId }: { userId: any }) {
   const approval = useQuery(api.parentApprovals.getChildApproval, { childId: userId });
   const updatePermissions = useMutation(api.parentApprovals.updateParentPermissions);
+  const { user } = useAuth();
 
   if (approval === undefined) {
     return (
@@ -65,7 +66,7 @@ function ParentApprovalCardWrapper({ userId }: { userId: Id<"users"> }) {
   return (
     <ParentApprovalCard
       approval={approval ? {
-        childName: approval.childName,
+        childName: user?.name,
         allowedCategories: approval.allowedCategories || [],
         maxDistanceKm: approval.maxDistanceKm || 5,
         allowedStartTime: approval.allowedStartTime || "08:00",
@@ -383,7 +384,7 @@ export default function Profile() {
 
           {/* Parent Approval (for minors under 18) */}
           {user?.age !== undefined && user.age < 18 && (
-            <ParentApprovalCardWrapper userId={user._id as Id<"users">} />
+            <ParentApprovalCardWrapper userId={user._id as any} />
           )}
 
           {/* Stats */}

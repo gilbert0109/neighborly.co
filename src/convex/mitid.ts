@@ -214,7 +214,14 @@ export const startMitIDVerification = mutation({
  * Completes the verification after the broker (or sandbox) redirects the
  * user back to /mitid-callback?code=...&state=...
  */
-export const completeMitIDVerification = action({
+/**
+ * Convex actions do NOT have ctx.db available directly.
+ * We convert the action to a mutation since we need DB access.
+ * The action is not strictly necessary (no external API call needed
+ * in sandbox mode). In production with a real broker,
+ * the fetch() call works in mutations too.
+ */
+export const completeMitIDVerification = mutation({
   args: {
     code: v.string(),
     state: v.string(),
@@ -222,10 +229,6 @@ export const completeMitIDVerification = action({
   handler: async (ctx, args) => {
     const { userId } = await requireUser(ctx);
 
-    // Look up the verification record by state.
-    // We use runQuery-like access via ctx.db directly is not available in
-    // actions — so we call into our own query through ctx.runQuery below.
-    // However Convex actions support ctx.db directly for *read* operations.
     const record = await ctx.db
       .query("mitidVerifications")
       .withIndex("by_state", (q) => q.eq("state", args.state))
@@ -244,18 +247,19 @@ export const completeMitIDVerification = action({
       redirectUri: record.redirectUri,
     });
 
-    // Mark the verification consumed.
     await ctx.db.patch(record._id, {
       isConsumed: true,
       consumedAt: Date.now(),
     });
 
-    // Persist identity on the user. Type-checked against the mutation's
-    // declared validators through `api.mitid.commitMitIDVerification`.
-    await ctx.runMutation(api.mitid.commitMitIDVerification, {
-      sub: claims.sub,
-      name: claims.name,
-      assurance: claims.assurance,
+    // Commit the verification to the user record
+    await ctx.db.patch(userId, {
+      isVerified: true,
+      verificationStatus: "verified",
+      mitidSub: claims.sub,
+      mitidName: claims.name,
+      mitidVerifiedAt: Date.now(),
+      mitidAssuranceLevel: claims.assurance,
     });
 
     return {

@@ -18,7 +18,10 @@ export async function requireParentApproval(
   const child = await ctx.db.get(childId as any);
   if (!child) throw new Error("Helper not found");
 
-  if (child.age !== undefined && child.age >= 18) {
+  // Type workaround — child is a generic document
+  const childAny = child as any;
+
+  if (childAny.age !== undefined && childAny.age >= 18) {
     return { approval: null, child };
   }
 
@@ -46,7 +49,8 @@ export async function validateMinorWorkerJob(
 ): Promise<string | null> {
   const child = await ctx.db.get(childId as any);
   if (!child) return "Helper not found";
-  if (child.age === undefined || child.age >= 18) return null; // Not a minor
+  const childAny = child as any;
+  if (childAny.age === undefined || childAny.age >= 18) return null; // Not a minor
 
   const { approval } = await requireParentApproval(ctx, childId);
 
@@ -60,8 +64,8 @@ export async function validateMinorWorkerJob(
   // Check distance
   if (approval.maxDistanceKm && job.location) {
     const d = haversine(
-      child.location?.lat ?? 0,
-      child.location?.lng ?? 0,
+      childAny.location?.lat ?? 0,
+      childAny.location?.lng ?? 0,
       job.location.lat,
       job.location.lng,
     );
@@ -291,16 +295,13 @@ export const getParentApproval = query({
 
 export const getChildApproval = query({
   args: { childId: v.id("users") },
-  handler: async (ctx) => {
+  handler: async (ctx, args) => {
     const { userId } = await requireUser(ctx);
-    const parentUser = await ctx.db.get(userId);
-    if (parentUser?.role !== "admin") {
-      // Only admin can view arbitrary child approvals
-      const approval = await ctx.db
-        .query("parentApprovals")
-        .withIndex("by_child", (q) => q.eq("childId", childId))
-        .first();
-      if (approval?.childId !== userId) throw new Error("Not authorized");
+
+    // Check authorization: only the child themselves or an admin can view
+    const user = await ctx.db.get(userId);
+    if (user?.role !== "admin" && args.childId !== userId) {
+      throw new Error("Not authorized");
     }
 
     return await ctx.db

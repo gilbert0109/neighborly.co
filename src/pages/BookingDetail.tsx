@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation, useConvex } from "convex/react";
-import { api, type Id } from "@/convex/_generated/api";
+import { api } from "@/convex/_generated/api";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import {
@@ -36,11 +36,11 @@ export default function BookingDetail() {
   const { user } = useAuth();
   const bookingData = useQuery(
     api.bookings.getBooking,
-    bookingId ? { bookingId: bookingId as Id<"bookings"> } : "skip"
+    bookingId ? { bookingId: bookingId as any } : "skip"
   );
   const rawMessages = useQuery(
     api.messages.getMessages,
-    bookingId ? { bookingId: bookingId as Id<"bookings"> } : "skip"
+    bookingId ? { bookingId: bookingId as any } : "skip"
   );
   const messages = rawMessages || [];
 
@@ -50,11 +50,11 @@ export default function BookingDetail() {
   const createSafetyReport = useMutation(api.admin.createSafetyReport);
   const bookingReview = useQuery(
     api.reviews.getBookingReview,
-    bookingId ? { bookingId: bookingId as Id<"bookings"> } : "skip"
+    bookingId ? { bookingId: bookingId as any } : "skip"
   );
   const bookingReviews = useQuery(
     api.reviews.getBookingReviews,
-    bookingId ? { bookingId: bookingId as Id<"bookings"> } : "skip"
+    bookingId ? { bookingId: bookingId as any } : "skip"
   );
 
   const [chatInput, setChatInput] = useState("");
@@ -73,7 +73,7 @@ export default function BookingDetail() {
       );
       if (hasUnread) {
         convex.mutation(api.messages.markAsRead, {
-          bookingId: bookingId as Id<"bookings">,
+          bookingId: bookingId as any,
         });
       }
     }
@@ -117,7 +117,7 @@ export default function BookingDetail() {
 
   const handleStatusUpdate = async (status: "accepted" | "in_progress" | "completed" | "cancelled") => {
     try {
-      await updateStatus({ bookingId: bookingId as Id<"bookings">, status });
+      await updateStatus({ bookingId: bookingId as any, status });
       toast.success(`${STATUS_LABELS[status] || status}`);
     } catch (e: any) {
       toast.error(e.message || "Kunne ikke opdatere status");
@@ -127,7 +127,7 @@ export default function BookingDetail() {
   const handleSendMessage = async (content: string) => {
     try {
       await sendMessage({
-        bookingId: bookingId as Id<"bookings">,
+        bookingId: bookingId as any,
         content,
       });
     } catch (e: any) {
@@ -143,7 +143,7 @@ export default function BookingDetail() {
     setIsReviewing(true);
     try {
       await createReview({
-        bookingId: bookingId as Id<"bookings">,
+        bookingId: bookingId as any,
         rating,
         comment: reviewComment,
       });
@@ -164,9 +164,9 @@ export default function BookingDetail() {
     }
     try {
       await createSafetyReport({
-        type: "unsafe_request",
-        description: `Sikkerhedsrapport vedr. booking ${bookingId}`,
-        reportedUserId: otherPerson?._id,
+        reason: "unsafe_request",
+        details: `Sikkerhedsrapport vedr. booking ${bookingId}`,
+        reportedUserId: otherPerson?._id as any,
         bookingId: bookingId as any,
       });
       toast.success("Sikkerhedsrapport oprettet");
@@ -338,7 +338,7 @@ export default function BookingDetail() {
 
         {/* Job risk card */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }}>
-          <JobRiskCard job={job} customer={customer} helper={helper} />
+          <JobRiskCard job={job as any} customer={customer} helper={helper} />
         </motion.div>
 
         {/* SOS */}

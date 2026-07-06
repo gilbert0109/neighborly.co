@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { api, type Id } from "@/convex/_generated/api";
+import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -78,7 +78,7 @@ export default function LiveTracker({
   const updateLocation = useMutation(api.locations.updateLocation);
   const helperLoc = useQuery(
     api.locations.getHelperLocation,
-    isInProgress ? { bookingId: bookingId as Id<"bookings"> } : "skip",
+    isInProgress ? { bookingId: bookingId as any } : "skip",
   );
 
   // --- Helper: start / stop location tracking ---
@@ -99,7 +99,7 @@ export default function LiveTracker({
         lastSentRef.current = now;
         try {
           await updateLocation({
-            bookingId: bookingId as Id<"bookings">,
+            bookingId: bookingId as any,
             location: {
               lat: pos.coords.latitude,
               lng: pos.coords.longitude,
@@ -233,8 +233,8 @@ export default function LiveTracker({
   }, [helperLoc, showMap, isHelper, jobLocation, jobAddress, helperName]);
 
   // Compute ETA
-  const dest = jobLocation || helperLoc?.jobLocation;
-  const eta = estimateETA(helperLoc?.location, dest, helperLoc?.speed);
+  const etaDest: { lat: number; lng: number } | undefined = jobLocation || helperLoc?.jobLocation || undefined;
+  const eta = estimateETA(helperLoc?.location, etaDest, helperLoc?.speed);
 
   // Don't render anything if booking is not in progress
   if (!isInProgress) return null;

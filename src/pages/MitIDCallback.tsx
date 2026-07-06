@@ -1,6 +1,6 @@
 import { useNavigate, useSearchParams } from "react-router";
 import { useEffect, useState } from "react";
-import { useAction } from "convex/react";
+import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { ShieldCheck, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 export default function MitIDCallback() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const complete = useAction(api.mitid.completeMitIDVerification);
+  const complete = useMutation(api.mitid.completeMitIDVerification);
   const [error, setError] = useState<string | null>(null);
 
   const code = searchParams.get("code");

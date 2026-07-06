@@ -14,13 +14,14 @@ export const createBooking = mutation({
   handler: async (ctx, args) => {
     const { userId, user } = await requireVerifiedHelper(ctx);
 
+    const job = await ctx.db.get(args.jobId);
+    if (!job) throw new Error("Opgave ikke fundet");
+
     // Minor-worker safety rules
     if (user.age !== undefined && user.age < 18) {
       // Check parent approval + validate job against parent permissions
-      if (job) {
-        const error = await validateMinorWorkerJob(ctx, userId, job);
-        if (error) throw new Error(error);
-      }
+      const error = await validateMinorWorkerJob(ctx, userId, job);
+      if (error) throw new Error(error);
 
       // Check working hours (from parent settings)
       const approval = await ctx.db
@@ -45,9 +46,6 @@ export const createBooking = mutation({
         throw new Error("Unge under 18 kan ikke arbejde mellem kl. 18:00 og 08:00. Vælg et tidspunkt mellem 08:00-18:00.");
       }
     }
-
-    const job = await ctx.db.get(args.jobId);
-    if (!job) throw new Error("Opgave ikke fundet");
     if (job.status !== "open") throw new Error("Opgaven er ikke tilgængelig");
 
     // Check for existing booking

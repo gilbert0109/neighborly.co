@@ -1,6 +1,6 @@
 import { useAuth } from "./use-auth";
 import { useQuery } from "convex/react";
-import { api, type Id } from "@/convex/_generated/api";
+import { api } from "@/convex/_generated/api";
 import { JOB_CATEGORY_LABELS } from "@/lib/constants";
 import { useMemo } from "react";
 
@@ -184,7 +184,7 @@ export function useSafetyGate({
 export function useParentPermissions(childId?: string): ParentPermissions {
   const approval = useQuery(
     api.parentApprovals.getChildApproval,
-    childId ? { childId: childId as unknown as Id<"users"> } : "skip"
+    childId ? { childId: childId as any } : "skip"
   );
 
   return useMemo(() => {

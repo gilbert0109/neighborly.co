@@ -121,7 +121,7 @@ export default function AdminDashboard() {
 
   const handleUnban = async (userId: string) => {
     try {
-      await unbanUser({ userId });
+      await unbanUser({ userId: userId as any });
       toast.success("Bruger genindsat");
     } catch (e: any) {
       toast.error(e.message || "Kunne ikke genindsætte bruger");
