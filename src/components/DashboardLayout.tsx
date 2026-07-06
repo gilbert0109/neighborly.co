@@ -13,6 +13,7 @@ import {
   Wrench,
   MessageSquare,
   ClipboardList,
+  Shield,
 } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -33,6 +34,11 @@ const allNavItems = {
     { path: "/jobs", label: "Find opgaver", icon: Briefcase },
     { path: "/bookings", label: "Bookinger", icon: ClipboardList },
     { path: "/conversations", label: "Beskeder", icon: MessageSquare },
+    { path: "/profile", label: "Profil", icon: User },
+  ],
+  admin: [
+    { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { path: "/admin", label: "Admin", icon: Shield },
     { path: "/profile", label: "Profil", icon: User },
   ],
 } as const;
@@ -60,9 +66,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   // (the safer default — they shouldn't see "Find opgaver" CTAs before
   // they're committed to being a helper).
   const navItems =
-    user?.role === "helper"
-      ? allNavItems.helper
-      : allNavItems.customer;
+    user?.role === "admin"
+      ? allNavItems.admin
+      : user?.role === "helper"
+        ? allNavItems.helper
+        : allNavItems.customer;
 
   const handleSignOut = async () => {
     try {
